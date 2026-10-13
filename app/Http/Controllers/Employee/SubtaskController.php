@@ -19,13 +19,14 @@ class SubtaskController extends Controller
         Task $task
     ): RedirectResponse {
         $this->authorizeTask($task);
+        $this->ensureTaskCanBeEdited($task);
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
         ]);
 
-        $subtask = $task->subtasks()->create([
+        $task->subtasks()->create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'created_by' => Auth::id(),
@@ -45,6 +46,7 @@ class SubtaskController extends Controller
         Subtask $subtask
     ): RedirectResponse {
         $this->authorizeTaskAndSubtask($task, $subtask);
+        $this->ensureTaskCanBeEdited($task);
 
         $validated = $request->validate([
             'status' => ['sometimes', 'required', 'in:pending,completed'],
@@ -87,5 +89,14 @@ class SubtaskController extends Controller
     ): void {
         $this->authorizeTask($task);
         abort_unless($subtask->task_id === $task->id, 403);
+    }
+
+    private function ensureTaskCanBeEdited(Task $task): void
+    {
+        abort_unless(
+            in_array($task->status, ['pending', 'in_progress', 'revision'], true),
+            422,
+            'Subtask tidak dapat diubah saat task sedang direview atau sudah selesai.'
+        );
     }
 }

@@ -18,12 +18,14 @@ class Task extends Model
         'description',
         'deadline',
         'status',
+        'review_cycle',
     ];
 
     protected function casts(): array
     {
         return [
             'deadline' => 'date',
+            'review_cycle' => 'integer',
         ];
     }
 
@@ -51,6 +53,11 @@ class Task extends Model
     public function subtasks(): HasMany
     {
         return $this->hasMany(Subtask::class);
+    }
+
+    public function revisionItems(): HasMany
+    {
+        return $this->hasMany(RevisionItem::class);
     }
 
     public function creator(): BelongsTo

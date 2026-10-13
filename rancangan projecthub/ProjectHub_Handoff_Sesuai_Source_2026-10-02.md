@@ -76,7 +76,7 @@ Employee melihat Task
 Employee melihat Subtask dan Attachment yang sudah ada
 ```
 
-**Penting:** source saat ini **belum memiliki alur lengkap Employee mengerjakan task → submit review → PM approve/revision**. Status task untuk alur tersebut sudah tersedia di database, tetapi endpoint/action-nya belum ada.
+**Penting:** source saat ini memiliki alur Employee mengerjakan task → submit review → PM approve/revision → tindak lanjut Revision Item. Upload attachment dan penyelesaian stage/project masih belum tercakup dalam alur tersebut.
 
 ---
 
@@ -993,29 +993,21 @@ Validasi tipe file, ukuran file, dan policy akses juga belum terlihat dalam sour
 
 ## 20.1 Kondisi Sebenarnya pada Source Sekarang
 
-**Revision Item belum ada sebagai entity/record khusus.**
+Revision Item sekarang tersedia sebagai entity/record khusus.
 
-Tidak ditemukan:
+Source sekarang memiliki:
 
 ```text
 RevisionItem model
 revision_items migration/table
-RevisionItem controller
-route Revision Item
-view khusus Revision Item
+Relasi Task -> Revision Items
+Employee follow-up routes and view
+PM review actions and revision history
 ```
 
-Yang ada baru:
+## 20.2 Data yang Disimpan
 
-```text
-Task.status = revision
-```
-
-dan label `Revisi` pada view.
-
-## 20.2 Konsep yang Perlu Dibangun
-
-Kalau rancangan final memang menggunakan Revision Item, struktur target yang disarankan:
+Setiap item revisi menyimpan task, nomor putaran, catatan, pembuat PM, status, penyelesai, dan waktu selesai. Pelaksana mengikuti assignee task, sehingga satu item dapat ditindaklanjuti anggota task yang ditugaskan:
 
 ```text
 Task
@@ -1023,8 +1015,8 @@ Task
 Revision Items
  ├── catatan revisi
  ├── dibuat oleh PM
- ├── assigned employee
  ├── status item
+ ├── pelaksana melalui assignee task
  ├── created_at
  ├── resolved_at
  └── cycle/history
@@ -1039,7 +1031,7 @@ Task #10
 └── Revision Item #3: Ubah teks error
 ```
 
-## 20.3 Flow Target
+## 20.3 Flow yang Tersedia
 
 ```text
 Employee
@@ -1069,7 +1061,7 @@ PM Review lagi
 
 ### Status
 
-**BELUM ADA**.
+**SUDAH ADA**, termasuk beberapa item dalam satu putaran dan history lintas putaran.
 
 ---
 
@@ -1077,23 +1069,23 @@ PM Review lagi
 
 ## Kondisi sekarang
 
-Tidak ditemukan endpoint untuk aksi:
+Employee memiliki aksi untuk memulai task dan mengajukannya:
 
 ```text
 POST submit review
 ```
 
-Tidak ada route yang mengubah:
+Alur status yang tersedia:
 
 ```text
-in_progress → waiting_review
+pending → in_progress → waiting_review
 ```
 
 ### Status
 
-**BELUM ADA**.
+**SUDAH ADA**.
 
-## Target
+## Aturan Submit yang Diterapkan
 
 Employee harus memiliki tombol/aksi:
 
@@ -1101,15 +1093,12 @@ Employee harus memiliki tombol/aksi:
 Submit for Review
 ```
 
-dengan aturan yang akan ditetapkan, misalnya:
+Aturan yang diterapkan:
 
 - task harus benar-benar milik employee;
-- task tidak completed;
-- pekerjaan/subtask yang diwajibkan sudah selesai;
-- attachment yang diwajibkan tersedia jika ada;
-- status menjadi `waiting_review`.
-
-Aturan final tersebut belum ada di source dan harus diputuskan sebelum implementasi.
+- task sedang berstatus `in_progress`;
+- task memiliki minimal satu subtask dan semua subtask berstatus `completed`;
+- status menjadi `waiting_review`, dengan nomor putaran review bertambah.
 
 ---
 
@@ -1117,22 +1106,20 @@ Aturan final tersebut belum ada di source dan harus diputuskan sebelum implement
 
 ## Kondisi sekarang
 
-Tidak ditemukan route/controller khusus review.
-
-Tidak ada implementasi:
+PM pemilik project dapat membuka antrian review dan melakukan:
 
 ```text
 Review Queue
 Approve
 Request Revision
-Review Note
+Revision Notes
 ```
 
 ### Status
 
-**BELUM ADA**.
+**SUDAH ADA** untuk antrian per project, approve, dan request revision.
 
-## Target
+## Alur Review yang Tersedia
 
 ```text
 Waiting Review
@@ -1666,90 +1653,56 @@ PM Review
 
 ---
 
-# 34. Rancangan Revision Item yang Konsisten dengan Source
+# 34. Implementasi Revision Item
 
-Karena source saat ini belum memiliki Revision Item, jangan langsung mengasumsikan struktur lama.
-
-Struktur target yang kompatibel dengan model Task saat ini dapat dibuat dengan hubungan:
+Revision Item memiliki relasi:
 
 ```text
 Task
   └── hasMany RevisionItem
 ```
 
-Contoh kolom minimal:
+Kolom pada implementasi:
 
 ```text
 id
- task_id
-created_by        → PM/user pembuat
-assigned_to       → employee/user pelaksana
-item              / title
-notes             / description
-status            → open / in_progress / resolved
+task_id
+cycle
+created_by
+note
+status              → open / in_progress / resolved
+resolved_by
 resolved_at
 created_at
 updated_at
 ```
 
-Jika ingin menyimpan siklus revisi secara eksplisit, bisa ditambah:
-
-```text
-revision_cycle
-```
-
-atau parent/review reference.
-
-**Jangan membuat struktur ini sebelum aturan bisnis final disepakati.**
+Task menyimpan `review_cycle`; setiap submit baru menaikkan nomor putaran dan item revisi lama tetap tersimpan.
 
 ---
 
 # 35. Rekomendasi Urutan Implementasi Berikutnya
 
-Urutan yang paling aman berdasarkan dependency source sekarang:
+Alur submit/review/revisi task sudah tersedia. Prioritas berikutnya:
 
 ```text
-1. Subtask actions
+1. Attachment upload/actions
    ↓
-2. Attachment upload/actions
+2. Stage completion rule
    ↓
-3. Employee task status actions
+3. Project completion rule
    ↓
-4. Submit for Review
+4. Dashboard metrics
    ↓
-5. PM Review
+5. Notification and activity history
    ↓
-6. Revision Item
-   ↓
-7. Revision cycle
-   ↓
-8. Stage completion rule
-   ↓
-9. Project completion rule
-   ↓
-10. Dashboard metrics
-   ↓
-11. Notification
-   ↓
-12. Activity history
-   ↓
-13. End-to-end testing
+6. End-to-end testing across all roles
 ```
 
 Alasannya:
 
 ```text
-Subtask
-  ↓
-Progress
-  ↓
-Submit Review
-  ↓
-PM Review
-  ↓
-Revision
-  ↓
-Task Completed
+Attachment and task lifecycle
   ↓
 Stage Completed
   ↓
@@ -1790,7 +1743,7 @@ SUBTASK ACTION
  ✓
  ↓
 ATTACHMENT ACTION
- ✓
+ pending
  ↓
 EMPLOYEE WORK
  ✓
@@ -1811,10 +1764,10 @@ TASK COMPLETED
  ✓
  ↓
 STAGE COMPLETED
- ✓
+ pending
  ↓
 PROJECT COMPLETED
- ✓
+ pending
 ```
 
 Semua langkah di atas juga harus lolos authorization check.
@@ -1827,10 +1780,10 @@ Gunakan dokumen ini bersama source code.
 
 ## Jangan lakukan
 
-- Jangan menganggap `task.status = revision` berarti Revision Item sudah ada.
-- Jangan menganggap subtask sudah bisa diedit hanya karena model/table sudah ada.
+- Saat task berstatus `revision`, pastikan tindak lanjut dilakukan pada item di putaran aktif.
+- Edit judul/deskripsi subtask belum tersedia; Employee dapat membuat subtask dan mengubah status/catatan penyelesaian.
 - Jangan menganggap attachment sudah bisa upload hanya karena relation sudah ada.
-- Jangan menganggap status `waiting_review` berarti submit-review sudah bekerja.
+- Pastikan perubahan status `waiting_review` hanya terjadi melalui aksi submit review yang tervalidasi.
 - Jangan menganggap project otomatis completed.
 - Jangan mengubah flow project yang sudah ada tanpa mengecek controller dan migration.
 - Jangan membuat ulang project dari nol.
@@ -1842,6 +1795,7 @@ Gunakan dokumen ini bersama source code.
 - Pertahankan assignee restriction Employee.
 - Gunakan `task_assignees` karena task memang sudah multi-assignee.
 - Gunakan progress subtask yang sudah menjadi accessor task.
+- Pertahankan item revisi dan nomor putaran sebagai history ketika Employee mengajukan ulang.
 - Tambahkan feature secara bertahap sesuai dependency.
 - Setelah setiap feature, uji role dan authorization.
 
@@ -1849,9 +1803,9 @@ Gunakan dokumen ini bersama source code.
 
 # 38. Ringkasan Akhir
 
-ProjectHub **sudah memiliki fondasi yang cukup lengkap untuk project, workflow, member, task creation, multi-assignee, employee task viewing, subtask data model, dan attachment data model**.
+ProjectHub sudah memiliki fondasi project, workflow, task dan subtask, serta alur review dan revisi task.
 
-Namun project **belum memiliki inti workflow pengerjaan sampai selesai**.
+Alur yang sekarang sudah berjalan:
 
 Bagian yang paling penting untuk dilanjutkan adalah:
 
@@ -1859,8 +1813,6 @@ Bagian yang paling penting untuk dilanjutkan adalah:
 EMPLOYEE ACTIONS
       ↓
 SUBTASK MANAGEMENT
-      ↓
-ATTACHMENT UPLOAD
       ↓
 TASK STATUS TRANSITION
       ↓
@@ -1873,14 +1825,6 @@ REVISION ITEM
 REVISION LOOP
       ↓
 TASK COMPLETED
-      ↓
-STAGE COMPLETED
-      ↓
-PROJECT COMPLETED
 ```
 
-Status `revision` pada database saat ini **bukan bukti bahwa fitur Revision Item sudah selesai**.
-
-Demikian juga keberadaan tabel `subtasks` dan `subtask_attachments` **belum berarti Employee sudah bisa mengelolanya**.
-
-Dokumen ini sengaja membedakan antara **schema**, **display**, dan **business action** agar AI berikutnya tidak salah menganggap data model sebagai fitur yang sudah selesai.
+Fitur berikutnya yang masih perlu dilanjutkan terpisah adalah upload/control attachment, activity history dan notification, serta sinkronisasi penyelesaian stage/project. Tetap verifikasi route, otorisasi, dan action; keberadaan schema saja tidak membuktikan business flow sudah aktif.

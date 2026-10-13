@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -137,11 +138,11 @@ class ProjectTaskController extends Controller
                 'nullable',
                 'date',
                 $project->start_date
-                    ? 'after_or_equal:' .
+                    ? 'after_or_equal:'.
                         $project->start_date->format('Y-m-d')
                     : null,
                 $project->deadline
-                    ? 'before_or_equal:' .
+                    ? 'before_or_equal:'.
                         $project->deadline->format('Y-m-d')
                     : null,
             ],
@@ -152,14 +153,11 @@ class ProjectTaskController extends Controller
             $validated
         ): void {
             $task = $project->tasks()->create([
-                'project_stage_id' =>
-                    $validated['project_stage_id'],
+                'project_stage_id' => $validated['project_stage_id'],
                 'created_by' => Auth::id(),
                 'title' => $validated['title'],
-                'description' =>
-                    $validated['description'] ?? null,
-                'deadline' =>
-                    $validated['deadline'] ?? null,
+                'description' => $validated['description'] ?? null,
+                'deadline' => $validated['deadline'] ?? null,
                 'status' => 'pending',
             ]);
 
@@ -173,8 +171,7 @@ class ProjectTaskController extends Controller
                 'project-manager.projects.tasks.index',
                 [
                     'project' => $project,
-                    'stage' =>
-                        $validated['project_stage_id'],
+                    'stage' => $validated['project_stage_id'],
                 ]
             )
             ->with(
@@ -201,6 +198,13 @@ class ProjectTaskController extends Controller
                     'attachments',
                 ])
                 ->oldest(),
+            'revisionItems' => fn ($query) => $query
+                ->with([
+                    'creator',
+                    'resolver',
+                ])
+                ->orderBy('cycle')
+                ->orderBy('id'),
         ]);
 
         $totalSubtasks = $task->subtasks->count();
@@ -218,6 +222,131 @@ class ProjectTaskController extends Controller
                 'completedSubtasks'
             )
         );
+    }
+
+    public function reviews(Project $project): View
+    {
+        $this->authorizeProject($project);
+
+        $tasks = $project->tasks()
+            ->where('status', 'waiting_review')
+            ->with([
+                'stage',
+                'assignees',
+            ])
+            ->latest()
+            ->get();
+
+        return view(
+            'project-manager.tasks.reviews',
+            compact('project', 'tasks')
+        );
+    }
+
+    public function approve(
+        Project $project,
+        Task $task
+    ): RedirectResponse {
+        $this->authorizeProject($project);
+        $this->authorizeTask($project, $task);
+
+        DB::transaction(function () use ($project, $task): void {
+            $task = Task::query()
+                ->lockForUpdate()
+                ->findOrFail($task->id);
+
+            $this->authorizeProject($project);
+            $this->authorizeTask($project, $task);
+
+            abort_unless(
+                $task->status === 'waiting_review',
+                422,
+                'Task ini tidak sedang menunggu review.'
+            );
+
+            $task->update(['status' => 'completed']);
+        });
+
+        return redirect()
+            ->route('project-manager.projects.tasks.show', [
+                'project' => $project,
+                'task' => $task,
+            ])
+            ->with('success', 'Task berhasil disetujui dan diselesaikan.');
+    }
+
+    public function requestRevision(
+        Request $request,
+        Project $project,
+        Task $task
+    ): RedirectResponse {
+        $this->authorizeProject($project);
+        $this->authorizeTask($project, $task);
+
+        $validated = $request->validate([
+            'revision_notes' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $revisionNotes = array_values(array_filter(
+            array_map(
+                'trim',
+                preg_split('/\R/u', $validated['revision_notes']) ?: []
+            ),
+            fn (string $note): bool => $note !== ''
+        ));
+
+        $validatedItems = Validator::make(
+            ['revision_items' => $revisionNotes],
+            [
+                'revision_items' => ['required', 'array', 'min:1', 'max:10'],
+                'revision_items.*' => ['required', 'string', 'max:1000'],
+            ],
+            [
+                'revision_items.required' => 'Masukkan minimal satu item revisi, satu item per baris.',
+                'revision_items.max' => 'Maksimal sepuluh item revisi untuk satu putaran.',
+                'revision_items.*.max' => 'Setiap item revisi maksimal 1000 karakter.',
+            ]
+        )->validate();
+
+        DB::transaction(function () use ($project, $task, $validatedItems): void {
+            $task = Task::query()
+                ->lockForUpdate()
+                ->findOrFail($task->id);
+
+            $this->authorizeProject($project);
+            $this->authorizeTask($project, $task);
+
+            abort_unless(
+                $task->status === 'waiting_review',
+                422,
+                'Revisi hanya dapat diminta saat task menunggu review.'
+            );
+
+            $cycle = max(1, $task->review_cycle);
+
+            $task->revisionItems()->createMany(
+                array_map(
+                    fn (string $note): array => [
+                        'cycle' => $cycle,
+                        'created_by' => Auth::id(),
+                        'note' => $note,
+                    ],
+                    $validatedItems['revision_items']
+                )
+            );
+
+            $task->update([
+                'status' => 'revision',
+                'review_cycle' => $cycle,
+            ]);
+        });
+
+        return redirect()
+            ->route('project-manager.projects.tasks.show', [
+                'project' => $project,
+                'task' => $task,
+            ])
+            ->with('success', 'Catatan revisi berhasil dikirim ke employee.');
     }
 
     public function destroy(

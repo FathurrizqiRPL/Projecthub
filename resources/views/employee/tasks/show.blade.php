@@ -24,6 +24,12 @@
 @endphp
 
 <div class="space-y-6">
+    @if (session('success'))
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <a href="{{ route('employee.tasks.index') }}"
         wire:navigate
         class="inline-flex items-center gap-2 text-sm font-semibold transition text-slate-500 hover:text-red-600">
@@ -141,6 +147,140 @@
     </div>
 
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h3 class="font-bold text-slate-900">Aksi Task</h3>
+                <p class="mt-1 text-sm text-slate-500">
+                    Progress 100% belum berarti task disetujui; PM perlu melakukan review.
+                </p>
+            </div>
+
+            @if ($task->status === 'pending')
+                <form action="{{ route('employee.tasks.start', $task) }}" method="POST">
+                    @csrf
+                    <button
+                        type="submit"
+                        class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                    >
+                        Mulai Mengerjakan
+                    </button>
+                </form>
+            @elseif ($task->status === 'in_progress' && $totalSubtasks > 0 && $completedSubtasks === $totalSubtasks)
+                <form action="{{ route('employee.tasks.submit', $task) }}" method="POST">
+                    @csrf
+                    <button
+                        type="submit"
+                        class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                    >
+                        Ajukan untuk Review
+                    </button>
+                </form>
+            @elseif ($task->status === 'in_progress')
+                <p class="text-sm font-medium text-slate-500">
+                    Selesaikan semua subtask untuk mengajukan review.
+                </p>
+            @elseif ($task->status === 'waiting_review')
+                <p class="rounded-full bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-700">
+                    Menunggu review Project Manager
+                </p>
+            @elseif ($task->status === 'revision')
+                <p class="rounded-full bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-700">
+                    Tindak lanjuti item revisi di bawah
+                </p>
+            @elseif ($task->status === 'completed')
+                <p class="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
+                    Task telah disetujui
+                </p>
+            @endif
+        </div>
+    </div>
+
+    @if ($task->revisionItems->isNotEmpty())
+        <div class="rounded-2xl border border-orange-200 bg-[#fffdfa] p-6 shadow-sm">
+            <h3 class="font-bold text-slate-900">Item Revisi</h3>
+            <p class="mt-1 text-sm text-slate-500">
+                Selesaikan semua item pada putaran aktif agar task dapat diajukan kembali.
+            </p>
+
+            <div class="mt-5 space-y-5">
+                @foreach ($task->revisionItems->groupBy('cycle') as $cycle => $revisionItems)
+                    <section>
+                        <h4 class="text-sm font-semibold text-slate-700">
+                            Putaran {{ $cycle }}
+                        </h4>
+
+                        <ul class="mt-2 space-y-3">
+                            @foreach ($revisionItems as $revisionItem)
+                                <li class="rounded-xl border border-slate-200 bg-white p-4">
+                                    <div class="flex flex-wrap items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-sm leading-6 whitespace-pre-line text-slate-700">
+                                                {{ $revisionItem->note }}
+                                            </p>
+                                            <p class="mt-2 text-xs text-slate-400">
+                                                Catatan dari {{ $revisionItem->creator?->name ?? '-' }}
+                                                @if ($revisionItem->resolved_at)
+                                                    · Diselesaikan {{ $revisionItem->resolved_at->locale('id')->translatedFormat('d F Y, H:i') }}
+                                                @endif
+                                            </p>
+                                        </div>
+
+                                        <span @class([
+                                            'rounded-full px-2.5 py-1 text-xs font-semibold',
+                                            'bg-amber-50 text-amber-700' => $revisionItem->status === 'open',
+                                            'bg-blue-50 text-blue-700' => $revisionItem->status === 'in_progress',
+                                            'bg-emerald-50 text-emerald-700' => $revisionItem->status === 'resolved',
+                                        ])>
+                                            {{ match ($revisionItem->status) {
+                                                'open' => 'Belum Dikerjakan',
+                                                'in_progress' => 'Dikerjakan',
+                                                'resolved' => 'Selesai',
+                                            } }}
+                                        </span>
+                                    </div>
+
+                                    @if ($task->status === 'revision'
+                                        && $revisionItem->cycle === $task->review_cycle
+                                        && $revisionItem->status !== 'resolved')
+                                        <form
+                                            action="{{ route('employee.tasks.revisions.update', ['task' => $task, 'revisionItem' => $revisionItem]) }}"
+                                            method="POST"
+                                            class="flex flex-wrap items-center gap-3 mt-4"
+                                        >
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <label for="revision-status-{{ $revisionItem->id }}" class="text-xs font-semibold text-slate-600">
+                                                Status tindak lanjut
+                                            </label>
+                                            <select
+                                                id="revision-status-{{ $revisionItem->id }}"
+                                                name="status"
+                                                class="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm focus:border-red-600 focus:ring-red-600"
+                                            >
+                                                <option value="in_progress" {{ $revisionItem->status === 'in_progress' ? 'selected' : '' }}>
+                                                    Sedang dikerjakan
+                                                </option>
+                                                <option value="resolved">Sudah diperbaiki</option>
+                                            </select>
+                                            <button
+                                                type="submit"
+                                                class="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
+                                            >
+                                                Simpan
+                                            </button>
+                                        </form>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
         <div>
             <h3 class="font-bold text-slate-900">
                 Subtask
@@ -154,7 +294,7 @@
                 $isAssignee = $task->assignees->contains(auth()->id());
             @endphp
 
-            @if ($isAssignee)
+            @if ($isAssignee && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
                 <form
                     action="{{ route('employee.tasks.subtasks.store', ['task' => $task]) }}"
                     method="POST"
@@ -260,57 +400,59 @@
                                     @endif
                                 </div>
 
-                                <form
-                                    action="{{ route('employee.tasks.subtasks.update', ['task' => $task, 'subtask' => $subtask]) }}"
-                                    method="POST"
-                                    class="mt-3 space-y-2 w-full max-w-xs"
-                                >
-                                    @csrf
-                                    @method('PATCH')
-
-                                    <div class="flex items-center gap-3">
-                                        <label class="text-xs font-semibold text-slate-600">
-                                            Status:
-                                        </label>
-                                        <select
-                                            name="status"
-                                            class="border rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                        >
-                                            <option value="pending"
-                                                {{ $subtask->status === 'pending' ? 'selected' : '' }}>
-                                                Belum Selesai
-                                            </option>
-                                            <option value="completed"
-                                                {{ $subtask->status === 'completed' ? 'selected' : '' }}>
-                                                Selesai
-                                            </option>
-                                        </select>
-                                    </div>
-
-                                    @if ($subtask->status === 'completed')
-                                        <div>
-                                            <label class="block text-xs font-semibold text-slate-600">
-                                                Catatan Penyelesaian (opsional)
-                                            </label>
-                                            <textarea
-                                                name="completion_note"
-                                                rows="2"
-                                                class="mt-1 block w-full rounded-md border border-slate-300 bg-white py-2 px-3 text-sm ring-1 ring-inset ring-slate-300 focus:border-red-600 focus:ring-red-600 sm:text-sm"
-                                            >{{ $subtask->completion_note }}</textarea>
-                                        </div>
-                                    @else
-                                        <div class="hidden">
-                                            <input type="text" name="completion_note">
-                                        </div>
-                                    @endif
-
-                                    <button
-                                        type="submit"
-                                        class="inline-flex items-center justify-center gap-2 px-2 py-1 text-xs font-medium rounded-md border border-transparent bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                                @if (in_array($task->status, ['pending', 'in_progress', 'revision'], true))
+                                    <form
+                                        action="{{ route('employee.tasks.subtasks.update', ['task' => $task, 'subtask' => $subtask]) }}"
+                                        method="POST"
+                                        class="mt-3 space-y-2 w-full max-w-xs"
                                     >
-                                        Perbarui
-                                    </button>
-                                </form>
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <div class="flex items-center gap-3">
+                                            <label class="text-xs font-semibold text-slate-600">
+                                                Status:
+                                            </label>
+                                            <select
+                                                name="status"
+                                                class="border rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                            >
+                                                <option value="pending"
+                                                    {{ $subtask->status === 'pending' ? 'selected' : '' }}>
+                                                    Belum Selesai
+                                                </option>
+                                                <option value="completed"
+                                                    {{ $subtask->status === 'completed' ? 'selected' : '' }}>
+                                                    Selesai
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        @if ($subtask->status === 'completed')
+                                            <div>
+                                                <label class="block text-xs font-semibold text-slate-600">
+                                                    Catatan Penyelesaian (opsional)
+                                                </label>
+                                                <textarea
+                                                    name="completion_note"
+                                                    rows="2"
+                                                    class="mt-1 block w-full rounded-md border border-slate-300 bg-white py-2 px-3 text-sm ring-1 ring-inset ring-slate-300 focus:border-red-600 focus:ring-red-600 sm:text-sm"
+                                                >{{ $subtask->completion_note }}</textarea>
+                                            </div>
+                                        @else
+                                            <div class="hidden">
+                                                <input type="text" name="completion_note">
+                                            </div>
+                                        @endif
+
+                                        <button
+                                            type="submit"
+                                            class="inline-flex items-center justify-center gap-2 px-2 py-1 text-xs font-medium rounded-md border border-transparent bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                                        >
+                                            Perbarui
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>

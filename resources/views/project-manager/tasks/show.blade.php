@@ -281,5 +281,119 @@
             </div>
         @endif
     </div>
+
+    @if ($task->revisionItems->isNotEmpty())
+        <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
+            <h3 class="font-bold text-slate-900">Riwayat Item Revisi</h3>
+            <p class="mt-1 text-sm text-slate-500">
+                Catatan disimpan per putaran review dan tidak dihapus saat task diajukan ulang.
+            </p>
+
+            <div class="mt-5 space-y-5">
+                @foreach ($task->revisionItems->groupBy('cycle') as $cycle => $revisionItems)
+                    <section>
+                        <h4 class="text-sm font-semibold text-slate-700">
+                            Putaran {{ $cycle }}
+                        </h4>
+
+                        <ul class="mt-2 space-y-2">
+                            @foreach ($revisionItems as $revisionItem)
+                                <li class="rounded-xl border border-slate-200 bg-white p-4">
+                                    <div class="flex flex-wrap items-center justify-between gap-2">
+                                        <p class="text-sm leading-6 whitespace-pre-line text-slate-700">
+                                            {{ $revisionItem->note }}
+                                        </p>
+
+                                        <span @class([
+                                            'rounded-full px-2.5 py-1 text-xs font-semibold',
+                                            'bg-amber-50 text-amber-700' => $revisionItem->status === 'open',
+                                            'bg-blue-50 text-blue-700' => $revisionItem->status === 'in_progress',
+                                            'bg-emerald-50 text-emerald-700' => $revisionItem->status === 'resolved',
+                                        ])>
+                                            {{ match ($revisionItem->status) {
+                                                'open' => 'Belum Dikerjakan',
+                                                'in_progress' => 'Dikerjakan',
+                                                'resolved' => 'Selesai',
+                                            } }}
+                                        </span>
+                                    </div>
+
+                                    <p class="mt-2 text-xs text-slate-400">
+                                        Catatan dari {{ $revisionItem->creator?->name ?? '-' }}
+                                        @if ($revisionItem->resolved_at)
+                                            · Diselesaikan oleh {{ $revisionItem->resolver?->name ?? '-' }}
+                                            pada {{ $revisionItem->resolved_at->locale('id')->translatedFormat('d F Y, H:i') }}
+                                        @endif
+                                    </p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    @if ($task->status === 'waiting_review')
+        <div class="rounded-2xl border border-amber-200 bg-[#fffdfa] p-6 shadow-sm">
+            <h3 class="font-bold text-slate-900">Keputusan Review</h3>
+            <p class="mt-1 text-sm text-slate-500">
+                Setujui task atau kirim daftar revisi. Tulis satu item revisi pada setiap baris.
+            </p>
+
+            <div class="grid gap-6 mt-5 lg:grid-cols-2">
+                <form
+                    action="{{ route('project-manager.projects.tasks.approve', [$project, $task]) }}"
+                    method="POST"
+                    class="flex flex-col items-start gap-3"
+                >
+                    @csrf
+                    <button
+                        type="submit"
+                        class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                    >
+                        Setujui dan Selesaikan Task
+                    </button>
+                </form>
+
+                <form
+                    action="{{ route('project-manager.projects.tasks.request-revision', [$project, $task]) }}"
+                    method="POST"
+                    class="space-y-3"
+                >
+                    @csrf
+                    <div>
+                        <label for="revision_notes" class="block text-sm font-semibold text-slate-700">
+                            Item revisi
+                        </label>
+                        <textarea
+                            id="revision_notes"
+                            name="revision_notes"
+                            rows="5"
+                            required
+                            class="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-red-600 focus:ring-red-600"
+                            placeholder="Perbaiki validasi login&#10;Sesuaikan tampilan mobile"
+                        >{{ old('revision_notes') }}</textarea>
+                        @error('revision_notes')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('revision_items')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('revision_items.*')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700"
+                    >
+                        Minta Revisi
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>
 @endsection

@@ -190,9 +190,24 @@ Route::middleware([
         )->name('projects.tasks.store');
 
         Route::get(
+            'projects/{project}/tasks/reviews',
+            [ProjectTaskController::class, 'reviews']
+        )->name('projects.tasks.reviews');
+
+        Route::get(
             'projects/{project}/tasks/{task}',
             [ProjectTaskController::class, 'show']
         )->name('projects.tasks.show');
+
+        Route::post(
+            'projects/{project}/tasks/{task}/approve',
+            [ProjectTaskController::class, 'approve']
+        )->name('projects.tasks.approve');
+
+        Route::post(
+            'projects/{project}/tasks/{task}/request-revision',
+            [ProjectTaskController::class, 'requestRevision']
+        )->name('projects.tasks.request-revision');
 
         Route::delete(
             'projects/{project}/tasks/{task}',
@@ -224,6 +239,16 @@ Route::middleware([
         )->name('tasks.show');
 
         Route::post(
+            'tasks/{task}/start',
+            [EmployeeTaskController::class, 'start']
+        )->name('tasks.start');
+
+        Route::post(
+            'tasks/{task}/submit',
+            [EmployeeTaskController::class, 'submitForReview']
+        )->name('tasks.submit');
+
+        Route::post(
             'tasks/{task}/subtasks',
             [SubtaskController::class, 'store']
         )->name('tasks.subtasks.store');
@@ -232,6 +257,11 @@ Route::middleware([
             'tasks/{task}/subtasks/{subtask}',
             [SubtaskController::class, 'update']
         )->name('tasks.subtasks.update');
+
+        Route::patch(
+            'tasks/{task}/revisions/{revisionItem}',
+            [EmployeeTaskController::class, 'updateRevisionItem']
+        )->name('tasks.revisions.update');
     });
 
 /*

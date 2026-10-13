@@ -115,7 +115,7 @@ Detail Project
 - Workflow project: **sudah ada**
 - Progress stage project: **sudah ada**
 - Task management: **sudah ada sebagian**
-- Review flow lengkap: **belum tercapai / perlu verifikasi**
+- Review dan tindak lanjut revisi task: **sudah tersedia**
 
 ---
 
@@ -300,8 +300,8 @@ COMPLETED       REVISION
 - Assign task ke Employee: **ada konsep, perlu verifikasi penuh**
 - Status task: **sebagian sudah ada / perlu verifikasi**
 - Progress task: **perlu verifikasi**
-- Submit for review: **belum terlihat sebagai flow lengkap**
-- Approve/revision: **belum terlihat sebagai flow lengkap**
+- Submit for review: **sudah tersedia; wajib minimal satu subtask dan seluruhnya selesai**
+- Approve/revision: **sudah tersedia**
 
 ---
 
@@ -334,7 +334,7 @@ Employee idealnya tidak dapat mengubah task milik employee lain.
 - Task list Employee: **sudah ada**
 - Task detail Employee: **sudah ada**
 - Batas akses hanya ke task sendiri: **perlu verifikasi**
-- Flow pengerjaan sampai submit review: **belum lengkap**
+- Flow pengerjaan sampai review dan tindak lanjut revisi: **sudah tersedia**
 
 ---
 
@@ -374,7 +374,7 @@ Submit Review
 - UI/detail subtask: **sudah terverifikasi**
 - Update subtask oleh Employee: **sebagian tercapai** (create, complete, revert, completion_note; edit judul/deskripsi belum ada)
 - Progress task berdasarkan subtask: **sudah ditetapkan dan berfungsi**
-- Validasi semua subtask sebelum submit: **belum ditetapkan**
+- Validasi sebelum submit: **minimal satu subtask dan semua subtask selesai**
 
 ---
 
@@ -521,24 +521,16 @@ APPROVED
 COMPLETED
 ```
 
-## 10.6 Fitur Revision Item yang Masih Perlu Dicapai
+## 10.6 Status Implementasi Revision Item
 
-Bagian ini **belum boleh dianggap selesai hanya karena status task `revision` tersedia**.
+Revision Item sekarang dicatat sebagai record sendiri dan dikelompokkan berdasarkan putaran review.
 
-Yang perlu dipastikan/dibangun:
-
-- Model/table `revision_items` bila memang dipakai sebagai entitas tersendiri.
-- Relasi `Task -> Revision Items`.
-- PM dapat membuat Revision Item.
-- PM dapat memberi catatan revisi yang jelas.
-- Revision Item memiliki status, misalnya `open`, `in_progress`, `resolved`.
-- Employee dapat melihat Revision Item miliknya.
-- Employee dapat menandai item yang sudah diperbaiki.
-- PM dapat memeriksa kembali hasil perbaikan.
-- Satu task dapat memiliki banyak Revision Item.
-- Riwayat revisi tetap tersimpan.
-- Submit ulang menghubungkan kembali task dengan revision cycle yang sedang berjalan.
-- Revision tidak langsung menghapus history revisi sebelumnya.
+- PM dapat membuat satu atau beberapa item revisi (satu item per baris).
+- Status item: `open`, `in_progress`, atau `resolved`.
+- Employee yang ditugaskan dapat memperbarui status item revisi.
+- Task kembali ke `in_progress` setelah semua item pada putaran aktif selesai.
+- Riwayat item dari putaran sebelumnya tetap tersimpan saat task diajukan ulang.
+- PM dapat menyetujui task atau membuat putaran revisi berikutnya.
 
 ---
 
@@ -595,10 +587,10 @@ Employee mengerjakan ulang
 
 ### Status
 
-- Review queue: **belum diverifikasi**
-- Approve action: **belum terlihat sebagai flow lengkap**
-- Request revision: **belum terlihat sebagai flow lengkap**
-- Revision Item: **belum tercapai sebagai fitur khusus**
+- Review queue: **sudah tersedia per project**
+- Approve action: **sudah tersedia**
+- Request revision: **sudah tersedia**
+- Revision Item dan tindak lanjut multi-cycle: **sudah tersedia**
 
 ---
 
@@ -629,7 +621,7 @@ Progress idealnya tidak boleh dipakai untuk menggantikan status workflow.
 - Bagaimana progress dihitung.
 - Apakah progress berdasarkan subtask.
 - Apakah Employee dapat menginput progress manual.
-- Apa yang terjadi jika progress 100% tetapi task belum direview.
+- Progress 100% mengizinkan Employee mengajukan review; status berubah ke `waiting_review` dan keputusan tetap di tangan PM.
 - Apakah revision menurunkan progress atau hanya mengubah status.
 
 ---
@@ -931,28 +923,26 @@ Urutan berikut dapat dijadikan backlog utama.
 
 ## Prioritas 4 — Submit for Review
 
-- Tombol submit.
-- Validasi task sebelum submit.
-- Perubahan status menjadi Waiting Review.
-- Lock/unlock bagian task sesuai status.
+- [x] Tombol submit dan validasi subtask.
+- [x] Perubahan status menjadi Waiting Review.
+- [x] Kunci perubahan subtask selama review dan setelah task selesai.
 
 ## Prioritas 5 — PM Review
 
-- Review queue.
-- Halaman review task.
-- Approve.
-- Request Revision.
-- Catatan review.
+- [x] Review queue per project.
+- [x] Halaman review task.
+- [x] Approve.
+- [x] Request Revision.
+- [x] Catatan revisi per item.
 
 ## Prioritas 6 — Revision Item
 
-- Entitas/record Revision Item.
-- Catatan revisi.
-- Status revision item.
-- Employee dapat melihat dan mengerjakan item revisi.
-- PM dapat memeriksa hasil revisi.
-- History setiap revisi.
-- Support multiple revision cycle.
+- [x] Entitas/record Revision Item.
+- [x] Catatan revisi dan status item.
+- [x] Employee dapat melihat dan mengerjakan item revisi.
+- [x] PM dapat memeriksa hasil revisi.
+- [x] History setiap revisi.
+- [x] Support multiple revision cycle.
 
 ## Prioritas 7 — Sinkronisasi Project
 

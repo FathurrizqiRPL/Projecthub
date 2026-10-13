@@ -14,12 +14,19 @@
             Kembali ke Project
         </a>
 
-        @if (!in_array($project->status, ['completed', 'cancelled']))
-            <a href="{{ route('project-manager.projects.tasks.create', ['project' => $project, 'stage' => $stage?->id]) }}" wire:navigate
-                class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">
-                + Buat Task
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('project-manager.projects.tasks.reviews', $project) }}" wire:navigate
+                class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
+                Antrian Review
             </a>
-        @endif
+
+            @if (!in_array($project->status, ['completed', 'cancelled']))
+                <a href="{{ route('project-manager.projects.tasks.create', ['project' => $project, 'stage' => $stage?->id]) }}" wire:navigate
+                    class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">
+                    + Buat Task
+                </a>
+            @endif
+        </div>
     </div>
 
     @if (session('success'))
