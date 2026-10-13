@@ -371,9 +371,9 @@ Submit Review
 ### Status
 
 - Relasi subtask pada database: **sudah terlihat**
-- UI/detail subtask: **perlu verifikasi**
-- Update subtask oleh Employee: **belum tercapai / perlu dibangun**
-- Progress task berdasarkan subtask: **belum ditetapkan secara final**
+- UI/detail subtask: **sudah terverifikasi**
+- Update subtask oleh Employee: **sebagian tercapai** (create, complete, revert, completion_note; edit judul/deskripsi belum ada)
+- Progress task berdasarkan subtask: **sudah ditetapkan dan berfungsi**
 - Validasi semua subtask sebelum submit: **belum ditetapkan**
 
 ---
@@ -900,6 +900,7 @@ Berdasarkan source yang sudah ditinjau:
 - Next stage.
 - Task area.
 - Employee task area.
+- Subtask actions (create, complete, revert, completion_note).
 - Relasi project-member-task-subtask-attachment sudah terlihat pada struktur aplikasi.
 
 ---
@@ -917,9 +918,9 @@ Urutan berikut dapat dijadikan backlog utama.
 
 ## Prioritas 2 — Subtask
 
-- UI subtask Employee.
-- Update status/progress subtask.
-- Hubungkan subtask dengan progress task jika aturan tersebut dipakai.
+- [x] UI subtask Employee.
+- [x] Update status/progress subtask.
+- [x] Hubungkan subtask dengan progress task jika aturan tersebut dipakai.
 
 ## Prioritas 3 — Attachment
 

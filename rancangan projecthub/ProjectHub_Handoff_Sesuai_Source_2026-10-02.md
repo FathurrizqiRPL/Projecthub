@@ -921,18 +921,18 @@ View PM dan Employee juga menghitung progress dengan rumus yang sama.
 
 Tidak ditemukan route/controller untuk:
 
-- membuat subtask;
-- mengedit subtask;
-- menandai subtask completed;
-- mengembalikan subtask ke pending;
-- mengisi completion note;
+- ~~membuat subtask;~~ **SUDAH ADA**
+- ~~menandai subtask completed;~~ **SUDAH ADA**
+- ~~mengembalikan subtask ke pending;~~ **SUDAH ADA**
+- ~~mengisi completion note;~~ **SUDAH ADA**
+- mengedit judul/deskripsi subtask;
 - submit subtask sebagai hasil kerja.
 
-Di UI sekarang subtask hanya tampil sebagai informasi.
+Employee sekarang dapat membuat subtask dan memperbarui status/catatan penyelesaian.
 
 ### Status
 
-**STRUKTUR SUDAH ADA, AKSI SUBTASK BELUM ADA**.
+**SEBAGIAN SUDAH ADA (create, complete, revert, completion_note)**.
 
 ---
 
@@ -1466,6 +1466,7 @@ Checklist berdasarkan source yang ditinjau:
 - [x] Menampilkan task progress.
 - [x] Menampilkan subtask.
 - [x] Menampilkan attachment yang sudah ada.
+- [x] Subtask actions (create, edit, complete, revert, completion_note).
 
 ## Data Layer
 
@@ -1490,9 +1491,9 @@ Belum ada action untuk:
 
 - mulai task;
 - ubah status ke `in_progress`;
-- mengelola subtask;
-- menyelesaikan subtask;
-- menambahkan completion note.
+- ~~mengelola subtask;~~ **SUDAH ADA**
+- ~~menyelesaikan subtask;~~ **SUDAH ADA**
+- ~~menambahkan completion note.~~ **SUDAH ADA**
 
 ### 2. Attachment Actions
 

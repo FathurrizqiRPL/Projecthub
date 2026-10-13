@@ -1,19 +1,20 @@
 <?php
 
-use App\Http\Controllers\Employee\TaskController as EmployeeTaskController;
-use App\Http\Controllers\ProjectManager\ProjectTaskController;
-use App\Http\Controllers\ProjectManager\ProjectProgressController;
-use App\Http\Controllers\ProjectManager\ProjectMemberController;
-use App\Http\Controllers\ProjectManager\ProjectStageController;
-use App\Http\Controllers\ProjectManager\ProjectController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Employee\SubtaskController;
+use App\Http\Controllers\Employee\TaskController as EmployeeTaskController;
 use App\Http\Controllers\ProjectManager\DashboardController as ProjectManagerDashboardController;
+use App\Http\Controllers\ProjectManager\ProjectController;
+use App\Http\Controllers\ProjectManager\ProjectMemberController;
+use App\Http\Controllers\ProjectManager\ProjectProgressController;
+use App\Http\Controllers\ProjectManager\ProjectStageController;
+use App\Http\Controllers\ProjectManager\ProjectTaskController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    if (!Auth::check()) {
+    if (! Auth::check()) {
         return redirect()->route('login');
     }
 
@@ -24,7 +25,6 @@ Route::get('/', function () {
         default => abort(403),
     };
 })->name('home');
-
 
 /*
 Dashboard Redirect
@@ -58,7 +58,6 @@ Route::get('dashboard', function () {
     ])
     ->name('dashboard');
 
-
 /*
 Admin Routes
 */
@@ -76,7 +75,6 @@ Route::middleware([
             'dashboard',
             [AdminDashboardController::class, 'index']
         )->name('dashboard');
-
 
         /*
         User Management
@@ -122,7 +120,6 @@ Route::middleware([
             [UserController::class, 'resetPassword']
         )->name('users.reset-password');
     });
-
 
 /*
 Project Manager Routes
@@ -203,7 +200,6 @@ Route::middleware([
         )->name('projects.tasks.destroy');
     });
 
-
 /*
  Employee Routes
 */
@@ -226,8 +222,17 @@ Route::middleware([
             'tasks/{task}',
             [EmployeeTaskController::class, 'show']
         )->name('tasks.show');
-    });
 
+        Route::post(
+            'tasks/{task}/subtasks',
+            [SubtaskController::class, 'store']
+        )->name('tasks.subtasks.store');
+
+        Route::patch(
+            'tasks/{task}/subtasks/{subtask}',
+            [SubtaskController::class, 'update']
+        )->name('tasks.subtasks.update');
+    });
 
 /*
  Profile
@@ -239,7 +244,6 @@ Route::view('profile', 'profile')
         'password.changed',
     ])
     ->name('profile');
-
 
 /*
  Authentication Routes
