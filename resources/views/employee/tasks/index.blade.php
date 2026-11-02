@@ -47,7 +47,9 @@
                         )
                         : 0;
 
-                    $statusLabel = match ($task->status) {
+                    $statusLabel = $task->completionException
+                        ? 'Dikecualikan oleh PM'
+                        : match ($task->status) {
                         'pending' => 'Belum Dikerjakan',
                         'in_progress' => 'Dikerjakan',
                         'waiting_review' => 'Menunggu Review',
@@ -73,11 +75,11 @@
 
                                 <span @class([
                                     'rounded-full border px-2.5 py-1 text-[10px] font-semibold',
-                                    'border-slate-200 bg-slate-100 text-slate-600' => $task->status === 'pending',
-                                    'border-blue-200 bg-blue-50 text-blue-700' => $task->status === 'in_progress',
-                                    'border-amber-200 bg-amber-50 text-amber-700' => $task->status === 'waiting_review',
-                                    'border-orange-200 bg-orange-50 text-orange-700' => $task->status === 'revision',
-                                    'border-emerald-200 bg-emerald-50 text-emerald-700' => $task->status === 'completed',
+                                    'border-slate-200 bg-slate-100 text-slate-600' => ! $task->completionException && $task->status === 'pending',
+                                    'border-blue-200 bg-blue-50 text-blue-700' => ! $task->completionException && $task->status === 'in_progress',
+                                    'border-amber-200 bg-amber-50 text-amber-700' => $task->completionException || $task->status === 'waiting_review',
+                                    'border-orange-200 bg-orange-50 text-orange-700' => ! $task->completionException && $task->status === 'revision',
+                                    'border-emerald-200 bg-emerald-50 text-emerald-700' => ! $task->completionException && $task->status === 'completed',
                                 ])>
                                     {{ $statusLabel }}
                                 </span>

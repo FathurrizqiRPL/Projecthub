@@ -93,7 +93,52 @@
                 </p>
             </div>
         </div>
+
+        <div class="mt-6 rounded-xl bg-slate-50 p-4">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-slate-800">Progress Project</p>
+                    <p class="mt-1 text-xs text-slate-500">Rata-rata progress setiap task</p>
+                </div>
+                <span class="text-lg font-bold text-slate-900">{{ $projectProgress }}%</span>
+            </div>
+            <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                <div class="h-full rounded-full bg-red-600 transition-all" style="width: {{ $projectProgress }}%"></div>
+            </div>
+        </div>
     </div>
+
+    @if ($project->completionExceptions->isNotEmpty())
+        <section class="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+            <h3 class="font-bold text-amber-900">Task yang dikecualikan saat project ditutup</h3>
+            <p class="mt-1 text-sm text-amber-700">Task ini belum selesai ketika PM menutup project. Catatan keputusan disimpan di sini.</p>
+
+            <div class="mt-4 space-y-4">
+                @foreach ($project->completionExceptions->groupBy('stage_name') as $stageName => $exceptions)
+                    <div>
+                        <h4 class="text-sm font-semibold text-amber-900">{{ $stageName }}</h4>
+                        <ul class="mt-2 space-y-2">
+                            @foreach ($exceptions as $exception)
+                                <li class="rounded-xl border border-amber-200 bg-white p-4">
+                                    <div class="flex flex-wrap items-start justify-between gap-2">
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-800">{{ $exception->task_title }}</p>
+                                            <p class="mt-1 text-xs text-slate-500">Status saat project ditutup: {{ ucfirst(str_replace('_', ' ', $exception->task_status)) }}</p>
+                                        </div>
+                                        <span class="text-xs text-slate-400">
+                                            Dicatat oleh {{ $exception->waivingManager?->name ?? 'PM' }}
+                                            {{ $exception->created_at?->locale('id')->translatedFormat('d M Y, H:i') }}
+                                        </span>
+                                    </div>
+                                    <p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">{{ $exception->reason }}</p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     {{-- Members & Workflow --}}
     <div class="grid gap-5 lg:grid-cols-2">
@@ -282,7 +327,25 @@
                             ->first();
                     @endphp
 
-                    @if ($nextStage)
+                    @if ($nextStage && $currentStageTaskCount === 0)
+                        <div class="px-4 py-3 mt-5 border rounded-xl border-amber-200 bg-amber-50">
+                            <p class="text-sm font-semibold text-amber-700">
+                                Belum ada task pada tahap ini.
+                            </p>
+                            <p class="mt-1 text-xs text-amber-600">
+                                Tambahkan minimal satu task sebelum tahap dapat diselesaikan.
+                            </p>
+                        </div>
+                    @elseif ($nextStage && $incompleteCurrentStageTaskCount > 0)
+                        <div class="px-4 py-3 mt-5 border rounded-xl border-amber-200 bg-amber-50">
+                            <p class="text-sm font-semibold text-amber-700">
+                                {{ $incompleteCurrentStageTaskCount }} task belum selesai pada tahap ini.
+                            </p>
+                            <p class="mt-1 text-xs text-amber-600">
+                                Selesaikan semua task sebelum melanjutkan workflow.
+                            </p>
+                        </div>
+                    @elseif ($nextStage)
                         <form method="POST"
                             action="{{ route('project-manager.projects.progress.next', $project) }}"
                             class="mt-5"
@@ -295,14 +358,113 @@
                             </button>
                         </form>
                     @else
-                        <div class="px-4 py-3 mt-5 border rounded-xl border-emerald-200 bg-emerald-50">
-                            <p class="text-sm font-semibold text-emerald-700">
-                                Tahap terakhir sedang berjalan.
-                            </p>
-                            <p class="mt-1 text-xs text-emerald-600">
-                                Project saat ini berada pada tahap {{ $project->currentStage->name }}.
-                            </p>
-                        </div>
+                        @if (! $hasMaintenanceStage)
+                            <form method="POST"
+                                action="{{ route('project-manager.projects.workflow.maintenance', $project) }}"
+                                class="mt-5"
+                                onsubmit="return confirm('Tambahkan tahap Maintenance ke workflow project?')">
+                                @csrf
+                                <button type="submit" class="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                                    Tambah Tahap Maintenance
+                                </button>
+                            </form>
+                        @endif
+
+                        @if ($projectTaskCount === 0)
+                            <div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                <p class="text-sm font-semibold text-amber-700">Project belum memiliki task.</p>
+                                <p class="mt-1 text-xs text-amber-600">Tambahkan minimal satu task sebelum menyelesaikan project.</p>
+                            </div>
+                        @elseif ($incompleteProjectTaskCount === 0)
+                            <form method="POST"
+                                action="{{ route('project-manager.projects.progress.complete', $project) }}"
+                                class="mt-5"
+                                onsubmit="return confirm('Selesaikan project {{ $project->name }}?')">
+                                @csrf
+
+                                <button type="submit"
+                                    class="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                                    Selesaikan Project
+                                </button>
+                            </form>
+                        @else
+                            <div x-data="{ showCompletionModal: @js($errors->any() && old('completion_form') === '1') }" class="mt-5">
+                                <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                    <p class="text-sm font-semibold text-amber-700">
+                                        {{ $incompleteProjectTaskCount }} task project belum selesai.
+                                    </p>
+                                    <p class="mt-1 text-xs text-amber-600">
+                                        Periksa task berdasarkan stage. Jika task memang tidak diperlukan, PM dapat mengecualikannya dengan alasan.
+                                    </p>
+                                </div>
+
+                                <button type="button" @click="showCompletionModal = true" class="mt-3 w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                                    Tinjau dan Selesaikan Project
+                                </button>
+
+                                <div x-cloak x-show="showCompletionModal" x-transition.opacity style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 p-4" @click.self="showCompletionModal = false" @keydown.escape.window="showCompletionModal = false">
+                                    <div x-show="showCompletionModal" x-transition class="my-auto w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl" role="dialog" aria-modal="true" aria-labelledby="project-completion-title">
+                                        <form method="POST" action="{{ route('project-manager.projects.progress.complete', $project) }}">
+                                            @csrf
+                                            <input type="hidden" name="completion_form" value="1">
+
+                                            <div class="border-b border-slate-100 px-6 py-5">
+                                                <h3 id="project-completion-title" class="text-lg font-bold text-slate-900">Selesaikan Project</h3>
+                                                <p class="mt-1 text-sm text-slate-500">Berikut task yang belum selesai. Pastikan task yang dikecualikan memang tidak lagi diperlukan.</p>
+                                            </div>
+
+                                            <div class="max-h-[45vh] space-y-4 overflow-y-auto px-6 py-5">
+                                                @foreach ($incompleteTasks->groupBy('project_stage_id') as $stageTasks)
+                                                    <section>
+                                                        <h4 class="mb-2 text-sm font-semibold text-slate-700">
+                                                            {{ $stageTasks->first()->stage?->name ?? 'Stage tidak tersedia' }}
+                                                        </h4>
+                                                        <ul class="space-y-2">
+                                                            @foreach ($stageTasks as $incompleteTask)
+                                                                <li class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                                                    <input type="hidden" name="incomplete_task_ids[]" value="{{ $incompleteTask->id }}">
+                                                                    <span class="min-w-0 truncate text-sm text-slate-700">{{ $incompleteTask->title }}</span>
+                                                                    <span class="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold text-amber-800">
+                                                                        {{ match ($incompleteTask->status) {
+                                                                            'pending' => 'Belum Dikerjakan',
+                                                                            'in_progress' => 'Dikerjakan',
+                                                                            'waiting_review' => 'Menunggu Review',
+                                                                            'revision' => 'Revisi',
+                                                                            default => ucfirst(str_replace('_', ' ', $incompleteTask->status)),
+                                                                        } }}
+                                                                    </span>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </section>
+                                                @endforeach
+
+                                                <label class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                                                    <input type="checkbox" name="confirm_incomplete_tasks" value="1" required class="mt-0.5 rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                                                    <span>Saya memastikan semua task yang belum selesai di atas tidak lagi diperlukan. Task tersebut akan dicatat sebagai pengecualian dan tidak dapat dilanjutkan setelah project ditutup.</span>
+                                                </label>
+                                                @error('confirm_incomplete_tasks')
+                                                    <p class="text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+
+                                                <div>
+                                                    <label for="completion-reason" class="block text-sm font-semibold text-slate-700">Alasan pengecualian</label>
+                                                    <textarea id="completion-reason" name="completion_reason" rows="3" required maxlength="1000" class="mt-1.5 block w-full rounded-xl border-slate-300 text-sm focus:border-red-600 focus:ring-red-600" placeholder="Jelaskan mengapa task yang tersisa tidak perlu dilanjutkan...">{{ old('completion_reason') }}</textarea>
+                                                    @error('completion_reason')
+                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                            </div>
+
+                                            <div class="flex justify-end gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4">
+                                                <button type="button" @click="showCompletionModal = false" class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">Kembali</button>
+                                                <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Konfirmasi Selesaikan</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     @endif
                 @endif
             @endif

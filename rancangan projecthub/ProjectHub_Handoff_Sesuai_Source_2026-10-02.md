@@ -536,31 +536,23 @@ project.current_stage_id = next stage
 
 ## 10.5 Batasan Penting
 
-`ProjectProgressController::next()` **tidak mengecek task pada stage**.
+`ProjectProgressController::next()` memastikan stage memiliki task dan seluruh task pada stage sudah selesai sebelum melanjutkan.
 
-Artinya saat ini source mengizinkan:
+Server memblokir perpindahan stage jika:
 
 ```text
 Current Stage
     ↓
 Masih ada task belum selesai
     ↓
-PM tetap dapat menekan Next Stage
+            PM tidak dapat menekan Next Stage
 ```
 
-Tidak ada validasi:
-
-```text
-Semua task stage selesai?
-```
-
-Selain itu, ketika tidak ada next stage, controller hanya mengembalikan error bahwa project berada di stage terakhir.
-
-**Tidak ada logika otomatis yang mengubah project menjadi `completed`.**
+Untuk melanjutkan ke stage berikutnya, stage aktif harus memiliki minimal satu task dan semua task-nya berstatus completed. Dari stage terakhir, PM dapat menutup project dengan semua task selesai atau mencatat pengecualian untuk task yang tidak lagi diperlukan.
 
 ### Status
 
-Integrasi stage ↔ task: **BELUM TERCAPAI**.
+Integrasi stage dan penyelesaian project: **SUDAH ADA**.
 
 ---
 
@@ -572,30 +564,20 @@ Pada Draft:
 
 - tambah stage;
 - rename stage;
-- hapus stage;
+- hapus stage yang belum memiliki task;
 - ubah urutan stage.
 
 Pada Active, UI menginformasikan:
 
 > Stage lama tidak dapat dihapus, tetapi dapat diganti nama atau ditambahkan stage baru.
 
-### Perbedaan UI vs Controller
+### Aturan Server
 
-Controller sebenarnya hanya memblokir penghapusan jika:
-
-```text
-project.status === completed
-```
-
-dan juga memblokir penghapusan current stage.
-
-Controller **tidak memiliki pengecekan `status === active` untuk semua stage lain**.
-
-Jadi aturan di UI dan aturan server belum sepenuhnya sinkron.
+Project completed tidak dapat mengubah workflow. Setelah workflow dimulai, server menolak penghapusan dan perubahan urutan stage yang sudah ada. Stage yang sudah memiliki task juga tidak dapat dihapus.
 
 ### Status
 
-**PERLU VERIFIKASI / PERBAIKAN RULE SERVER**.
+**ATURAN SERVER SUDAH DISELARASKAN DENGAN UI**.
 
 ---
 
@@ -1144,11 +1126,13 @@ COMPLETED               Revision Item
 
 ## Kondisi Sekarang
 
-Project memiliki status `completed`, tetapi belum ada alur otomatis/terkontrol untuk mencapainya.
+PM hanya dapat melanjutkan ke stage berikutnya setelah semua task pada stage aktif selesai. Dari stage terakhir, PM dapat menutup project dengan pengecualian task yang belum selesai setelah konfirmasi dan alasan.
 
-PM dapat memilih status project melalui form edit.
+Project dapat ditutup dari stage terakhir. Jika masih ada task belum selesai, PM melihat daftar yang dikelompokkan per stage, wajib mengonfirmasi task tersebut memang tidak diperlukan, dan mengisi alasan. Snapshot task, status, stage, alasan, dan PM pencatat disimpan sebagai completion exception. Task yang dikecualikan tidak dapat dilanjutkan setelah project ditutup.
 
-`ProjectProgressController::next()` tidak melakukan:
+Jika semua task sudah selesai, PM dapat menutup project tanpa pengecualian. PM juga dapat menambahkan stage `Maintenance` secara opsional di akhir workflow sebelum penutupan.
+
+`ProjectProgressController::next()` mengatur perpindahan stage, sedangkan `complete()` menutup project dari stage terakhir:
 
 ```text
 Jika stage terakhir selesai:
@@ -1156,28 +1140,24 @@ Jika stage terakhir selesai:
 → project = completed
 ```
 
-Jadi saat ini:
+Flow sekarang:
 
 ```text
-Stage terakhir
+Project berada di stage terakhir
   ↓
-Tidak ada Next Stage
+Semua task selesai atau dikecualikan PM dengan alasan
   ↓
-Controller berhenti
-  ↓
-Project tetap active
+Project berstatus completed
 ```
 
 ### Status
 
-**PROJECT COMPLETION FLOW BELUM TERCAPAI**.
+**PROJECT COMPLETION FLOW SUDAH ADA**.
 
-## Target
-
-Rancangan yang perlu diputuskan:
+## Aturan yang Diterapkan
 
 ```text
-Semua task stage selesai
+Semua task di stage aktif selesai untuk lanjut
         ↓
 Stage completed
         ↓
@@ -1185,12 +1165,12 @@ Jika ada next stage → lanjut
         ↓
 Jika stage terakhir:
         ↓
-Semua task project selesai
+Task selesai atau dikecualikan PM dengan alasan
         ↓
 Project completed
 ```
 
-Apakah final `completed` otomatis atau manual tetap harus diputuskan.
+Penyelesaian project dilakukan melalui aksi PM pada stage terakhir; status `completed` tidak dapat dipilih langsung pada create/edit project. Tahap Maintenance dapat ditambahkan sebelum penutupan.
 
 ---
 
@@ -1198,17 +1178,13 @@ Apakah final `completed` otomatis atau manual tetap harus diputuskan.
 
 ## Kondisi Sekarang
 
-Tidak ditemukan accessor/service khusus untuk `Project.progress`.
-
-Task sudah memiliki progress berdasarkan subtask.
-
-Dashboard PM belum menampilkan overall project progress.
+Halaman detail project menampilkan overall progress sebagai rata-rata progress setiap task. Progress task dihitung dari subtask selesai; task completed dihitung 100%, task tanpa subtask yang belum completed dihitung 0%, dan project tanpa task memiliki progress 0%.
 
 ### Status
 
-**BELUM ADA SEBAGAI FITUR PENUH**.
+**SUDAH ADA PADA DETAIL PROJECT**.
 
-## Target yang Mungkin
+## Rumus
 
 ```text
 Task A 100%
@@ -1219,10 +1195,8 @@ Task C 0%
 kemudian:
 
 ```text
-Project progress = rata-rata / bobot task
+Project progress = rata-rata progress task (bobot sama untuk setiap task)
 ```
-
-Namun rumus final belum ditetapkan dalam source.
 
 ---
 
@@ -1526,11 +1500,10 @@ Review Again
 
 # 31. Prioritas Menengah
 
-- [ ] Integrasi otomatis stage dengan status task.
-- [ ] Block Next Stage jika task stage belum selesai.
-- [ ] Finalisasi stage terakhir.
-- [ ] Project auto/manual completion rule.
-- [ ] Overall project progress.
+- [x] Integrasi otomatis stage dengan status task.
+- [x] Block Next Stage jika task stage belum selesai.
+- [x] Finalisasi stage terakhir dan project completion otomatis.
+- [x] Overall project progress pada detail project.
 - [ ] Dashboard PM real statistics task.
 - [ ] Notification.
 - [ ] Activity history.

@@ -9,13 +9,13 @@ use App\Models\SubtaskAttachment;
 use App\Models\Task;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\StreamedResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProjectTaskController extends Controller
 {
@@ -28,8 +28,13 @@ class ProjectTaskController extends Controller
 
         $search = trim($validated['search'] ?? '');
         $reviewOnly = ($validated['filter'] ?? 'all') === 'review';
+        $reviewTaskFilter = fn ($query) => $query
+            ->where('status', 'waiting_review')
+            ->whereDoesntHave('completionException')
+            ->whereHas('project', fn ($projectQuery) => $projectQuery
+                ->whereIn('status', ['draft', 'active']));
         $taskFilter = fn ($query) => $reviewOnly
-            ? $query->where('status', 'waiting_review')
+            ? $reviewTaskFilter($query)
             : $query;
 
         $projects = Project::query()
@@ -44,14 +49,14 @@ class ProjectTaskController extends Controller
                         'stage',
                         'assignees',
                         'subtasks',
+                        'completionException',
                     ])
                     ->orderByDesc('updated_at')
                     ->orderByDesc('id')
                     ->limit(2),
             ])
             ->withCount([
-                'tasks as waiting_review_tasks_count' => fn ($query) => $query
-                    ->where('status', 'waiting_review'),
+                'tasks as waiting_review_tasks_count' => $reviewTaskFilter,
             ])
             ->orderBy('name')
             ->paginate(10)
@@ -59,11 +64,9 @@ class ProjectTaskController extends Controller
 
         $reviewTaskCount = Project::query()
             ->where('created_by', Auth::id())
-            ->whereHas('tasks', fn ($query) => $query
-                ->where('status', 'waiting_review'))
+            ->whereHas('tasks', $reviewTaskFilter)
             ->withCount([
-                'tasks as waiting_review_tasks_count' => fn ($query) => $query
-                    ->where('status', 'waiting_review'),
+                'tasks as waiting_review_tasks_count' => $reviewTaskFilter,
             ])
             ->get()
             ->sum('waiting_review_tasks_count');
@@ -108,6 +111,7 @@ class ProjectTaskController extends Controller
                     'assignees',
                     'stage',
                     'subtasks',
+                    'completionException',
                 ])
                 ->latest()
                 ->get()
@@ -216,7 +220,30 @@ class ProjectTaskController extends Controller
             $project,
             $validated
         ): void {
-            $task = $project->tasks()->create([
+            $lockedProject = Project::query()
+                ->lockForUpdate()
+                ->findOrFail($project->id);
+
+            $this->authorizeProject($lockedProject);
+
+            abort_if(
+                in_array($lockedProject->status, ['completed', 'cancelled'], true),
+                422,
+                'Task tidak dapat ditambahkan ke project ini.'
+            );
+
+            $stage = $lockedProject->stages()
+                ->whereKey($validated['project_stage_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            abort_if(
+                $stage->completed_at !== null,
+                422,
+                'Task tidak dapat ditambahkan ke stage yang sudah selesai.'
+            );
+
+            $task = $lockedProject->tasks()->create([
                 'project_stage_id' => $validated['project_stage_id'],
                 'created_by' => Auth::id(),
                 'title' => $validated['title'],
@@ -255,6 +282,7 @@ class ProjectTaskController extends Controller
             'stage',
             'creator',
             'assignees',
+            'completionException',
             'subtasks' => fn ($query) => $query
                 ->with([
                     'creator',
@@ -276,6 +304,7 @@ class ProjectTaskController extends Controller
         $completedSubtasks = $task->subtasks
             ->where('status', 'completed')
             ->count();
+        $canModifyProject = ! in_array($project->status, ['completed', 'cancelled'], true);
 
         return view(
             'project-manager.tasks.show',
@@ -283,7 +312,8 @@ class ProjectTaskController extends Controller
                 'project',
                 'task',
                 'totalSubtasks',
-                'completedSubtasks'
+                'completedSubtasks',
+                'canModifyProject'
             )
         );
     }
@@ -300,9 +330,11 @@ class ProjectTaskController extends Controller
         abort_unless($attachment->subtask_id === $subtask->id, 404);
         abort_unless(Storage::disk('local')->exists($attachment->file_path), 404);
 
-        return Storage::disk('local')->download(
+        return Storage::disk('local')->response(
             $attachment->file_path,
-            $attachment->original_name
+            $attachment->original_name,
+            ['X-Content-Type-Options' => 'nosniff'],
+            'inline'
         );
     }
 
@@ -312,14 +344,21 @@ class ProjectTaskController extends Controller
     ): RedirectResponse {
         $this->authorizeProject($project);
         $this->authorizeTask($project, $task);
+        $this->ensureProjectCanBeModified($project);
 
         DB::transaction(function () use ($project, $task): void {
+            $lockedProject = Project::query()
+                ->lockForUpdate()
+                ->findOrFail($project->id);
+
+            $this->authorizeProject($lockedProject);
+            $this->ensureProjectCanBeModified($lockedProject);
+
             $task = Task::query()
                 ->lockForUpdate()
                 ->findOrFail($task->id);
 
-            $this->authorizeProject($project);
-            $this->authorizeTask($project, $task);
+            $this->authorizeTask($lockedProject, $task);
 
             abort_unless(
                 $task->status === 'waiting_review',
@@ -372,12 +411,18 @@ class ProjectTaskController extends Controller
         )->validate();
 
         DB::transaction(function () use ($project, $task, $validatedItems): void {
+            $lockedProject = Project::query()
+                ->lockForUpdate()
+                ->findOrFail($project->id);
+
+            $this->authorizeProject($lockedProject);
+            $this->ensureProjectCanBeModified($lockedProject);
+
             $task = Task::query()
                 ->lockForUpdate()
                 ->findOrFail($task->id);
 
-            $this->authorizeProject($project);
-            $this->authorizeTask($project, $task);
+            $this->authorizeTask($lockedProject, $task);
 
             abort_unless(
                 $task->status === 'waiting_review',
@@ -418,16 +463,32 @@ class ProjectTaskController extends Controller
     ): RedirectResponse {
         $this->authorizeProject($project);
         $this->authorizeTask($project, $task);
+        $this->ensureProjectCanBeModified($project);
 
-        abort_unless(
-            $task->status === 'pending',
-            422,
-            'Task yang sudah dikerjakan tidak dapat dihapus.'
-        );
+        $stageId = DB::transaction(function () use ($project, $task): int {
+            $lockedProject = Project::query()
+                ->lockForUpdate()
+                ->findOrFail($project->id);
 
-        $stageId = $task->project_stage_id;
+            $this->authorizeProject($lockedProject);
+            $this->ensureProjectCanBeModified($lockedProject);
 
-        $task->delete();
+            $lockedTask = Task::query()
+                ->lockForUpdate()
+                ->findOrFail($task->id);
+
+            $this->authorizeTask($lockedProject, $lockedTask);
+
+            abort_unless(
+                $lockedTask->status === 'pending',
+                422,
+                'Task yang sudah dikerjakan tidak dapat dihapus.'
+            );
+
+            $lockedTask->delete();
+
+            return (int) $lockedTask->project_stage_id;
+        });
 
         return redirect()
             ->route(
@@ -461,6 +522,15 @@ class ProjectTaskController extends Controller
             (int) $task->project_id ===
             (int) $project->id,
             404
+        );
+    }
+
+    private function ensureProjectCanBeModified(Project $project): void
+    {
+        abort_unless(
+            ! in_array($project->status, ['completed', 'cancelled'], true),
+            422,
+            'Task tidak dapat diubah karena project sudah ditutup.'
         );
     }
 }

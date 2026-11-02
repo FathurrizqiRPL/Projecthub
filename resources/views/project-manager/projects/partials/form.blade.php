@@ -102,12 +102,22 @@
         class="mt-2 w-full rounded-xl border-slate-300
                focus:border-red-500 focus:ring-red-500"
     >
-        @foreach ([
-            'draft' => 'Draft',
-            'active' => 'Active',
-            'completed' => 'Completed',
-            'cancelled' => 'Cancelled',
-        ] as $value => $label)
+        @php
+            $projectStatusOptions = isset($project) && $project->status === 'completed'
+                ? ['completed' => 'Completed']
+                : (isset($project) && $project->current_stage_id !== null
+                    ? [
+                        'active' => 'Active',
+                        'cancelled' => 'Cancelled',
+                    ]
+                    : [
+                    'draft' => 'Draft',
+                    'active' => 'Active',
+                    'cancelled' => 'Cancelled',
+                    ]);
+        @endphp
+
+        @foreach ($projectStatusOptions as $value => $label)
 
             <option
                 value="{{ $value }}"

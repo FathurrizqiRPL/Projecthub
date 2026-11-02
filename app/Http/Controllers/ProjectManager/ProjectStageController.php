@@ -12,6 +12,57 @@ use Illuminate\View\View;
 
 class ProjectStageController extends Controller
 {
+    public function addMaintenance(Project $project): RedirectResponse
+    {
+        $this->authorizeProject($project);
+
+        DB::transaction(function () use ($project): void {
+            $project = Project::query()
+                ->lockForUpdate()
+                ->with('currentStage')
+                ->findOrFail($project->id);
+
+            $this->authorizeProject($project);
+
+            abort_unless(
+                $project->status === 'active' && $project->currentStage,
+                422,
+                'Maintenance hanya dapat ditambahkan pada project aktif yang sudah dimulai.'
+            );
+
+            $hasNextStage = $project->stages()
+                ->where('position', '>', $project->currentStage->position)
+                ->exists();
+
+            abort_if(
+                $hasNextStage,
+                422,
+                'Tahap Maintenance hanya dapat ditambahkan setelah tahap terakhir workflow.'
+            );
+
+            $hasMaintenanceStage = $project->stages()
+                ->whereRaw('LOWER(name) = ?', ['maintenance'])
+                ->exists();
+
+            abort_if(
+                $hasMaintenanceStage,
+                422,
+                'Tahap Maintenance sudah tersedia pada workflow.'
+            );
+
+            $lastPosition = $project->stages()->max('position') ?? 0;
+
+            $project->stages()->create([
+                'name' => 'Maintenance',
+                'position' => $lastPosition + 1,
+            ]);
+        });
+
+        return redirect()
+            ->route('project-manager.projects.show', $project)
+            ->with('success', 'Tahap Maintenance ditambahkan. Buat task maintenance sebelum melanjutkan workflow.');
+    }
+
     public function edit(Project $project): View
     {
         $this->authorizeProject($project);
@@ -63,8 +114,24 @@ class ProjectStageController extends Controller
                 ->stages()
                 ->get();
 
+            if ($project->status === 'active' || $project->current_stage_id !== null) {
+                $existingStageIds = $existingStages
+                    ->pluck('id')
+                    ->map(fn ($id) => (int) $id)
+                    ->values();
+                $submittedExistingStageIds = $submittedIds
+                    ->filter(fn ($id) => $existingStageIds->contains($id))
+                    ->values();
+
+                abort_unless(
+                    $submittedExistingStageIds->all() === $existingStageIds->all(),
+                    422,
+                    'Stage yang sudah ada tidak dapat dihapus atau diubah urutannya saat project aktif.'
+                );
+            }
+
             foreach ($existingStages as $existingStage) {
-                if (!$submittedIds->contains($existingStage->id)) {
+                if (! $submittedIds->contains($existingStage->id)) {
                     if (
                         (int) $project->current_stage_id ===
                         (int) $existingStage->id
@@ -74,6 +141,12 @@ class ProjectStageController extends Controller
                             'Stage yang sedang aktif tidak dapat dihapus.'
                         );
                     }
+
+                    abort_if(
+                        $existingStage->tasks()->exists(),
+                        422,
+                        'Stage yang sudah memiliki task tidak dapat dihapus.'
+                    );
 
                     $existingStage->delete();
                 }

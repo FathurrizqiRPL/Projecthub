@@ -11,7 +11,9 @@
         )
         : 0;
 
-    $statusLabel = match ($task->status) {
+    $statusLabel = $task->completionException
+        ? 'Dikecualikan oleh PM'
+        : match ($task->status) {
         'pending' => 'Belum Dikerjakan',
         'in_progress' => 'Dikerjakan',
         'waiting_review' => 'Menunggu Review',
@@ -47,11 +49,11 @@
 
             <span @class([
                 'rounded-full border px-3 py-1 text-xs font-semibold',
-                'border-slate-200 bg-slate-100 text-slate-600' => $task->status === 'pending',
-                'border-blue-200 bg-blue-50 text-blue-700' => $task->status === 'in_progress',
-                'border-amber-200 bg-amber-50 text-amber-700' => $task->status === 'waiting_review',
-                'border-orange-200 bg-orange-50 text-orange-700' => $task->status === 'revision',
-                'border-emerald-200 bg-emerald-50 text-emerald-700' => $task->status === 'completed',
+                'border-slate-200 bg-slate-100 text-slate-600' => ! $task->completionException && $task->status === 'pending',
+                'border-blue-200 bg-blue-50 text-blue-700' => ! $task->completionException && $task->status === 'in_progress',
+                'border-amber-200 bg-amber-50 text-amber-700' => $task->completionException || $task->status === 'waiting_review',
+                'border-orange-200 bg-orange-50 text-orange-700' => ! $task->completionException && $task->status === 'revision',
+                'border-emerald-200 bg-emerald-50 text-emerald-700' => ! $task->completionException && $task->status === 'completed',
             ])>
                 {{ $statusLabel }}
             </span>
@@ -155,7 +157,16 @@
                 </p>
             </div>
 
-            @if ($task->status === 'pending')
+            @if (! $canEditTask)
+                <div class="max-w-md rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
+                    @if ($task->completionException)
+                        <p class="font-semibold">Task ini dikecualikan saat project ditutup.</p>
+                        <p class="mt-1">Alasan: {{ $task->completionException->reason }}</p>
+                    @else
+                        <p class="font-semibold">Project sudah ditutup; task ini tidak dapat ditindaklanjuti.</p>
+                    @endif
+                </div>
+            @elseif ($task->status === 'pending')
                 <form action="{{ route('employee.tasks.start', $task) }}" method="POST">
                     @csrf
                     <button
@@ -239,7 +250,8 @@
                                         </span>
                                     </div>
 
-                                    @if ($task->status === 'revision'
+                                    @if ($canEditTask
+                                        && $task->status === 'revision'
                                         && $revisionItem->cycle === $task->review_cycle
                                         && $revisionItem->status !== 'resolved')
                                         <form
@@ -294,7 +306,7 @@
                 $isAssignee = $task->assignees->contains(auth()->id());
             @endphp
 
-            @if ($isAssignee && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
+            @if ($canEditTask && $isAssignee && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
                 <form
                     action="{{ route('employee.tasks.subtasks.store', ['task' => $task]) }}"
                     method="POST"
@@ -382,13 +394,13 @@
                                     </p>
                                 @endif
 
-                                @if ($isAssignee && $subtask->status !== 'completed'
+                                @if ($canEditTask && $isAssignee && $subtask->status !== 'completed'
                                     && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
                                     <button type="button" @click="showCompletionModal = true" class="mt-4 rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700">
                                         Laporkan Penyelesaian
                                     </button>
 
-                                    <div x-cloak x-show="showCompletionModal" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 p-4" @click.self="showCompletionModal = false" @keydown.escape.window="showCompletionModal = false">
+                                    <div x-cloak x-show="showCompletionModal" x-transition.opacity style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 p-4" @click.self="showCompletionModal = false" @keydown.escape.window="showCompletionModal = false">
                                         <div x-show="showCompletionModal" x-transition class="my-auto w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-xl" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title">
                                             <form action="{{ route('employee.tasks.subtasks.update', ['task' => $task, 'subtask' => $subtask]) }}" method="POST" enctype="multipart/form-data">
                                                 @csrf
@@ -412,6 +424,7 @@
 
                                                     <div>
                                                         <label for="completion-files-{{ $subtask->id }}" class="block text-sm font-semibold text-slate-700">Bukti penyelesaian <span class="font-normal text-slate-400">(wajib, maks. 5 file, 10 MB per file)</span></label>
+                                                        <p class="mt-1 text-xs leading-5 text-slate-500">Format yang diterima: JPG, JPEG, PNG, WEBP, PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, CSV, dan ZIP.</p>
                                                         <input id="completion-files-{{ $subtask->id }}" type="file" name="attachments[]" required multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip" class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-3 file:py-2.5 file:text-xs file:font-semibold file:text-slate-700 hover:file:bg-slate-200">
                                                         @error('attachments')
                                                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>

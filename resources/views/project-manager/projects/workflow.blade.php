@@ -51,7 +51,7 @@
         </div>
 
 
-        @if ($project->status === 'active')
+        @if ($project->status === 'active' || $project->current_stage_id !== null)
 
             <div
                 class="mt-5 rounded-xl border

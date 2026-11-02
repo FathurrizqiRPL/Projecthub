@@ -24,6 +24,7 @@ class TaskController extends Controller
             ->with([
                 'project',
                 'stage',
+                'completionException',
                 'assignees',
                 'subtasks',
             ])
@@ -43,6 +44,7 @@ class TaskController extends Controller
         $task->load([
             'project',
             'stage',
+            'completionException',
             'creator',
             'assignees',
             'subtasks' => fn ($query) => $query
@@ -66,13 +68,15 @@ class TaskController extends Controller
         $completedSubtasks = $task->subtasks
             ->where('status', 'completed')
             ->count();
+        $canEditTask = ! in_array($task->project->status, ['completed', 'cancelled'], true);
 
         return view(
             'employee.tasks.show',
             compact(
                 'task',
                 'totalSubtasks',
-                'completedSubtasks'
+                'completedSubtasks',
+                'canEditTask'
             )
         );
     }
@@ -80,6 +84,7 @@ class TaskController extends Controller
     public function start(Task $task): RedirectResponse
     {
         $this->authorizeTask($task);
+        $this->ensureProjectIsOpen($task);
 
         abort_unless(
             $task->status === 'pending',
@@ -104,6 +109,7 @@ class TaskController extends Controller
                 ->findOrFail($task->id);
 
             $this->authorizeTask($task);
+            $this->ensureProjectIsOpen($task);
 
             abort_unless(
                 $task->status === 'in_progress',
@@ -139,6 +145,7 @@ class TaskController extends Controller
         RevisionItem $revisionItem
     ): RedirectResponse {
         $this->authorizeTask($task);
+        $this->ensureProjectIsOpen($task);
 
         abort_unless(
             $task->status === 'revision'
@@ -166,6 +173,7 @@ class TaskController extends Controller
                 ->findOrFail($revisionItem->id);
 
             $this->authorizeTask($task);
+            $this->ensureProjectIsOpen($task);
 
             abort_unless(
                 $task->status === 'revision'
@@ -211,6 +219,15 @@ class TaskController extends Controller
                 )
                 ->exists(),
             403
+        );
+    }
+
+    private function ensureProjectIsOpen(Task $task): void
+    {
+        abort_unless(
+            ! in_array($task->project()->value('status'), ['completed', 'cancelled'], true),
+            422,
+            'Task tidak dapat diubah karena project sudah ditutup.'
         );
     }
 }

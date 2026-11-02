@@ -53,13 +53,16 @@
                 <select id="project_stage_id" name="project_stage_id" required
                     class="block w-full mt-2 text-sm bg-white shadow-sm rounded-xl border-slate-300 text-slate-700 focus:border-red-500 focus:ring-red-500">
                     <option value="">Pilih tahap project</option>
-                    @foreach ($project->stages->sortBy('position') as $stage)
+                    @foreach ($project->stages->whereNull('completed_at')->sortBy('position') as $stage)
                         <option value="{{ $stage->id }}"
                             @selected(old('project_stage_id', request('stage') ?? $project->current_stage_id) == $stage->id)>
                             {{ $stage->name }}
                         </option>
                     @endforeach
                 </select>
+                @if ($project->stages->whereNull('completed_at')->isEmpty())
+                    <p class="mt-2 text-xs text-slate-500">Semua stage sudah selesai. Task baru tidak dapat ditambahkan.</p>
+                @endif
                 @error('project_stage_id')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror

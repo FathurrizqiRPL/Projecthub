@@ -683,12 +683,12 @@ Stage selesai
 Lanjut ke Testing
 ```
 
-### Yang perlu diverifikasi
+### Aturan workflow yang diterapkan
 
-- Apakah task memiliki relasi ke stage.
-- Apakah stage boleh dilanjutkan sebelum semua task selesai.
-- Apakah PM dapat memaksa stage berpindah.
-- Apakah stage terakhir otomatis membuat project completed atau tetap membutuhkan aksi PM.
+- Task terhubung ke stage project.
+- Stage harus memiliki minimal satu task dan semua task-nya completed sebelum dapat dilanjutkan.
+- PM tidak dapat memaksa stage berpindah melalui aksi progress.
+- Stage terakhir menyelesaikan project otomatis setelah seluruh task project completed.
 
 ---
 
@@ -947,10 +947,14 @@ Urutan berikut dapat dijadikan backlog utama.
 
 ## Prioritas 7 — Sinkronisasi Project
 
-- Task selesai → stage dapat dianggap selesai.
-- Stage selesai → project maju ke stage berikutnya.
-- Stage terakhir selesai → project dapat diselesaikan.
-- Perhitungan overall progress konsisten.
+- [x] Semua task pada stage aktif wajib selesai sebelum PM dapat melanjutkan.
+- [x] Stage harus memiliki minimal satu task sebelum dapat diselesaikan.
+- [x] Stage selesai → project maju ke stage berikutnya.
+- [x] Project dapat ditutup dari stage terakhir; task belum selesai ditampilkan per stage dan memerlukan konfirmasi serta alasan pengecualian dari PM.
+- [x] Task yang dikecualikan dicatat dan dikunci setelah project ditutup.
+- [x] PM dapat menambahkan tahap Maintenance opsional di akhir workflow.
+- [x] Jika semua task selesai, project dapat ditutup tanpa pengecualian.
+- [x] Overall progress project dihitung dari rata-rata progress task dan ditampilkan di detail project.
 
 ## Prioritas 8 — Notification & History
 

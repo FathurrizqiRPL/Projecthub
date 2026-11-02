@@ -154,6 +154,11 @@ Route::middleware([
             [ProjectStageController::class, 'edit']
         )->name('projects.workflow.edit');
 
+        Route::post(
+            'projects/{project}/workflow/maintenance',
+            [ProjectStageController::class, 'addMaintenance']
+        )->name('projects.workflow.maintenance');
+
         Route::put(
             'projects/{project}/workflow',
             [ProjectStageController::class, 'update']
@@ -178,6 +183,11 @@ Route::middleware([
             'projects/{project}/progress/next',
             [ProjectProgressController::class, 'next']
         )->name('projects.progress.next');
+
+        Route::post(
+            'projects/{project}/progress/complete',
+            [ProjectProgressController::class, 'complete']
+        )->name('projects.progress.complete');
 
         Route::get(
             'projects/{project}/tasks',

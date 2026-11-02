@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProjectController extends Controller
@@ -57,7 +58,7 @@ class ProjectController extends Controller
 
             'status' => [
                 'required',
-                'in:draft,active,completed,cancelled',
+                'in:draft,active,cancelled',
             ],
 
             'workflow_type' => [
@@ -127,11 +128,45 @@ class ProjectController extends Controller
             'stages',
             'members',
             'currentStage',
+            'completionExceptions.waivingManager',
         ]);
+
+        $incompleteTasks = $project->tasks()
+            ->where('status', '!=', 'completed')
+            ->with('stage')
+            ->orderBy('project_stage_id')
+            ->orderBy('title')
+            ->get();
+        $projectTaskCount = $project->tasks()->count();
+        $incompleteProjectTaskCount = $incompleteTasks->count();
+        $currentStageTaskCount = $project->currentStage
+            ? $project->tasks()
+                ->where('project_stage_id', $project->current_stage_id)
+                ->count()
+            : 0;
+        $incompleteCurrentStageTaskCount = $project->currentStage
+            ? $project->tasks()
+                ->where('project_stage_id', $project->current_stage_id)
+                ->where('status', '!=', 'completed')
+                ->count()
+            : 0;
+        $projectProgress = $project->progress;
+        $hasMaintenanceStage = $project->stages->contains(
+            fn ($stage) => mb_strtolower(trim($stage->name)) === 'maintenance'
+        );
 
         return view(
             'project-manager.projects.show',
-            compact('project')
+            compact(
+                'project',
+                'projectTaskCount',
+                'incompleteProjectTaskCount',
+                'currentStageTaskCount',
+                'incompleteCurrentStageTaskCount',
+                'projectProgress',
+                'incompleteTasks',
+                'hasMaintenanceStage'
+            )
         );
     }
 
@@ -150,6 +185,12 @@ class ProjectController extends Controller
         Project $project
     ): RedirectResponse {
         $this->authorizeProject($project);
+
+        $allowedStatuses = match (true) {
+            $project->status === 'completed' => ['completed'],
+            $project->current_stage_id !== null => ['active', 'cancelled'],
+            default => ['draft', 'active', 'cancelled'],
+        };
 
         $validated = $request->validate([
             'name' => [
@@ -176,7 +217,7 @@ class ProjectController extends Controller
 
             'status' => [
                 'required',
-                'in:draft,active,completed,cancelled',
+                Rule::in($allowedStatuses),
             ],
         ]);
 

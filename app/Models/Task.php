@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Task extends Model
 {
@@ -58,6 +59,11 @@ class Task extends Model
     public function revisionItems(): HasMany
     {
         return $this->hasMany(RevisionItem::class);
+    }
+
+    public function completionException(): HasOne
+    {
+        return $this->hasOne(ProjectCompletionException::class);
     }
 
     public function creator(): BelongsTo

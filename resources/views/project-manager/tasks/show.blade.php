@@ -5,7 +5,9 @@
 
 @section('content')
 @php
-    $statusLabel = match ($task->status) {
+    $statusLabel = $task->completionException
+        ? 'Dikecualikan'
+        : match ($task->status) {
         'pending' => 'Belum Dikerjakan',
         'in_progress' => 'Dikerjakan',
         'waiting_review' => 'Menunggu Review',
@@ -37,6 +39,17 @@
         </div>
     @endif
 
+    @if ($task->completionException)
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p class="font-semibold">Task ini dikecualikan saat project ditutup.</p>
+            <p class="mt-1">Alasan: {{ $task->completionException->reason }}</p>
+        </div>
+    @elseif (! $canModifyProject && $task->status !== 'completed')
+        <div class="rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600">
+            Project sudah ditutup. Task ini tidak dapat dilanjutkan.
+        </div>
+    @endif
+
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
         <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div class="flex-1 min-w-0">
@@ -47,11 +60,11 @@
 
                     <span @class([
                         'inline-flex rounded-full border px-3 py-1 text-xs font-semibold',
-                        'border-slate-200 bg-slate-100 text-slate-600' => $task->status === 'pending',
-                        'border-blue-200 bg-blue-50 text-blue-700' => $task->status === 'in_progress',
-                        'border-amber-200 bg-amber-50 text-amber-700' => $task->status === 'waiting_review',
-                        'border-orange-200 bg-orange-50 text-orange-700' => $task->status === 'revision',
-                        'border-emerald-200 bg-emerald-50 text-emerald-700' => $task->status === 'completed',
+                        'border-slate-200 bg-slate-100 text-slate-600' => ! $task->completionException && $task->status === 'pending',
+                        'border-blue-200 bg-blue-50 text-blue-700' => ! $task->completionException && $task->status === 'in_progress',
+                        'border-amber-200 bg-amber-50 text-amber-700' => $task->completionException || $task->status === 'waiting_review',
+                        'border-orange-200 bg-orange-50 text-orange-700' => ! $task->completionException && $task->status === 'revision',
+                        'border-emerald-200 bg-emerald-50 text-emerald-700' => ! $task->completionException && $task->status === 'completed',
                     ])>
                         {{ $statusLabel }}
                     </span>
@@ -261,7 +274,7 @@
 
                                         <div class="flex flex-wrap gap-2 mt-2">
                                             @foreach ($subtask->attachments as $attachment)
-                                                <a href="{{ route('project-manager.projects.tasks.attachments.download', ['project' => $project, 'task' => $task, 'subtask' => $subtask, 'attachment' => $attachment]) }}" class="inline-flex items-center max-w-full gap-2 px-3 py-2 text-xs bg-white border rounded-lg border-slate-200 text-red-700 hover:border-red-300">
+                                                <a href="{{ route('project-manager.projects.tasks.attachments.download', ['project' => $project, 'task' => $task, 'subtask' => $subtask, 'attachment' => $attachment]) }}" target="_blank" rel="noopener" class="inline-flex items-center max-w-full gap-2 px-3 py-2 text-xs bg-white border rounded-lg border-slate-200 text-red-700 hover:border-red-300">
                                                     <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.172 7l-6.586 6.586a2 2 0 1 0 2.828 2.828L18 9.828a4 4 0 1 0-5.657-5.657L5.757 10.757a6 6 0 1 0 8.486 8.486L20.5 13"/>
                                                     </svg>
@@ -334,7 +347,7 @@
         </div>
     @endif
 
-    @if ($task->status === 'waiting_review')
+    @if ($canModifyProject && $task->status === 'waiting_review')
         <div class="rounded-2xl border border-amber-200 bg-[#fffdfa] p-6 shadow-sm">
             <h3 class="font-bold text-slate-900">Keputusan Review</h3>
             <p class="mt-1 text-sm text-slate-500">

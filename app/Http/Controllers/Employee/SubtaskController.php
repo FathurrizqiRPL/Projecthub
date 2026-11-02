@@ -8,9 +8,9 @@ use App\Models\SubtaskAttachment;
 use App\Models\Task;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\StreamedResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SubtaskController extends Controller
 {
@@ -56,9 +56,11 @@ class SubtaskController extends Controller
         abort_unless($attachment->subtask_id === $subtask->id, 404);
         abort_unless(Storage::disk('local')->exists($attachment->file_path), 404);
 
-        return Storage::disk('local')->download(
+        return Storage::disk('local')->response(
             $attachment->file_path,
-            $attachment->original_name
+            $attachment->original_name,
+            ['X-Content-Type-Options' => 'nosniff'],
+            'inline'
         );
     }
 
@@ -190,6 +192,12 @@ class SubtaskController extends Controller
 
     private function ensureTaskCanBeEdited(Task $task): void
     {
+        abort_unless(
+            ! in_array($task->project()->value('status'), ['completed', 'cancelled'], true),
+            422,
+            'Task tidak dapat diubah karena project sudah ditutup.'
+        );
+
         abort_unless(
             in_array($task->status, ['pending', 'in_progress', 'revision'], true),
             422,
