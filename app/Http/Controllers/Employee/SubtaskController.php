@@ -119,7 +119,18 @@ class SubtaskController extends Controller
 
         $validated = $request->validate([
             'status' => ['sometimes', 'required', 'in:pending,completed'],
-            'completion_note' => ['sometimes', 'nullable', 'string'],
+            'completion_note' => [
+                'required_if:status,completed',
+                'nullable',
+                'string',
+                'max:5000',
+            ],
+            'attachments' => ['required', 'array', 'min:1', 'max:5'],
+            'attachments.*' => [
+                'file',
+                'max:10240',
+                'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip',
+            ],
         ]);
 
         if (array_key_exists('status', $validated)) {
@@ -139,9 +150,26 @@ class SubtaskController extends Controller
             ]);
         }
 
+        foreach ($validated['attachments'] ?? [] as $file) {
+            $path = $file->store('subtask-attachments', 'local');
+
+            $subtask->attachments()->create([
+                'uploaded_by' => Auth::id(),
+                'original_name' => $file->getClientOriginalName(),
+                'file_path' => $path,
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+            ]);
+        }
+
         return redirect()
             ->route('employee.tasks.show', ['task' => $task])
-            ->with('success', 'Subtask berhasil diperbarui.');
+            ->with(
+                'success',
+                ($validated['status'] ?? null) === 'completed'
+                    ? 'Laporan penyelesaian subtask berhasil dikirim.'
+                    : 'Subtask berhasil diperbarui.'
+            );
     }
 
     private function authorizeTask(Task $task): void

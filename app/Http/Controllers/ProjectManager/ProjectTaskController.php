@@ -36,7 +36,8 @@ class ProjectTaskController extends Controller
             ->where('created_by', Auth::id())
             ->when($search !== '', fn ($query) => $query
                 ->where('name', 'like', '%'.$search.'%'))
-            ->whereHas('tasks', $taskFilter)
+            ->when($reviewOnly, fn ($query) => $query
+                ->whereHas('tasks', $taskFilter))
             ->with([
                 'tasks' => fn ($query) => $taskFilter($query)
                     ->with([
@@ -44,7 +45,9 @@ class ProjectTaskController extends Controller
                         'assignees',
                         'subtasks',
                     ])
-                    ->latest(),
+                    ->orderByDesc('updated_at')
+                    ->orderByDesc('id')
+                    ->limit(2),
             ])
             ->withCount([
                 'tasks as waiting_review_tasks_count' => fn ($query) => $query

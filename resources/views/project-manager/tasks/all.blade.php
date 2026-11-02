@@ -78,7 +78,7 @@
     @if ($projects->isEmpty())
         <div class="rounded-2xl border border-dashed border-slate-200 bg-[#fffdfa] p-10 text-center">
             <p class="text-sm font-semibold text-slate-700">
-                {{ $reviewOnly ? 'Tidak ada task yang menunggu review' : 'Task tidak ditemukan' }}
+                {{ $reviewOnly ? 'Tidak ada task yang menunggu review' : 'Project tidak ditemukan' }}
             </p>
             <p class="mt-1 text-xs text-slate-400">
                 @if ($search !== '')
@@ -86,7 +86,7 @@
                 @elseif ($reviewOnly)
                     Task yang diajukan employee akan tampil di sini untuk divalidasi.
                 @else
-                    Project yang memiliki task akan tampil di sini.
+                    Project yang Anda kelola akan tampil di sini.
                 @endif
             </p>
         </div>
@@ -99,11 +99,6 @@
                             <h3 class="text-lg font-bold text-slate-900">
                                 {{ $project->name }}
                             </h3>
-                            @if ($project->description)
-                                <p class="mt-1 text-sm text-slate-500">
-                                    {{ $project->description }}
-                                </p>
-                            @endif
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
@@ -123,6 +118,12 @@
                     </header>
 
                     <div class="space-y-3 p-4 sm:p-5">
+                        @if ($project->tasks->isEmpty())
+                            <div class="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center">
+                                <p class="text-sm font-semibold text-slate-700">Project belum ada tugas</p>
+                            </div>
+                        @endif
+
                         @foreach ($project->tasks as $task)
                             @php
                                 $statusLabel = match ($task->status) {
@@ -167,8 +168,13 @@
                                             {{ $completedSubtasks }} dari {{ $totalSubtasks }} subtask selesai
                                         </p>
 
-                                        <div class="mt-3 h-1.5 max-w-md overflow-hidden rounded-full bg-slate-100">
-                                            <div class="h-full rounded-full bg-red-600" style="width: {{ $progress }}%"></div>
+                                        <div class="mt-3 flex max-w-md items-center gap-1">
+                                            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                                                <div class="h-full rounded-full bg-red-600" style="width: {{ $progress }}%"></div>
+                                            </div>
+                                            <span class="w-8 text-right text-xs font-semibold text-slate-600">
+                                                {{ $progress }}%
+                                            </span>
                                         </div>
 
                                         @if ($task->assignees->isNotEmpty())

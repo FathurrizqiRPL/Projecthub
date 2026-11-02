@@ -345,10 +345,10 @@
                 </p>
             </div>
         @else
-            <div class="mt-6 divide-y divide-slate-100">
+            <div class="mt-6 grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
                 @foreach ($task->subtasks as $subtask)
-                    <div class="py-5 first:pt-0 last:pb-0">
-                        <div class="flex gap-4">
+                    <div x-data="{ showCompletionModal: @js($errors->any() && (string) old('subtask_id') === (string) $subtask->id) }" class="rounded-xl border border-slate-200 bg-white p-4">
+                        <div class="flex items-start gap-3">
                             <div @class([
                                 'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
                                 'bg-emerald-50 text-emerald-600' => $subtask->status === 'completed',
@@ -382,111 +382,53 @@
                                     </p>
                                 @endif
 
-                                <div class="flex flex-wrap mt-3 text-xs gap-x-5 gap-y-2 text-slate-400">
-                                    <span>
-                                        Dibuat oleh
-                                        <strong class="font-semibold text-slate-600">
-                                            {{ $subtask->creator?->name ?? '-' }}
-                                        </strong>
-                                    </span>
+                                @if ($isAssignee && $subtask->status !== 'completed'
+                                    && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
+                                    <button type="button" @click="showCompletionModal = true" class="mt-4 rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700">
+                                        Laporkan Penyelesaian
+                                    </button>
 
-                                    @if ($subtask->status === 'completed')
-                                        <span>
-                                            Diselesaikan oleh
-                                            <strong class="font-semibold text-slate-600">
-                                                {{ $subtask->completer?->name ?? '-' }}
-                                            </strong>
-                                        </span>
-                                    @endif
-                                </div>
+                                    <div x-cloak x-show="showCompletionModal" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 p-4" @click.self="showCompletionModal = false" @keydown.escape.window="showCompletionModal = false">
+                                        <div x-show="showCompletionModal" x-transition class="my-auto w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-xl" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title">
+                                            <form action="{{ route('employee.tasks.subtasks.update', ['task' => $task, 'subtask' => $subtask]) }}" method="POST" enctype="multipart/form-data">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status" value="completed">
+                                                <input type="hidden" name="subtask_id" value="{{ $subtask->id }}">
 
-                                @if ($subtask->attachments->isNotEmpty())
-                                    <div class="mt-3 flex flex-wrap gap-2">
-                                        @foreach ($subtask->attachments as $attachment)
-                                            <div class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs">
-                                                <a href="{{ route('employee.tasks.subtasks.attachments.download', ['task' => $task, 'subtask' => $subtask, 'attachment' => $attachment]) }}"
-                                                    class="font-medium text-red-700 hover:underline">
-                                                    {{ $attachment->original_name }}
-                                                </a>
-                                                @if ($attachment->uploaded_by === auth()->id()
-                                                    && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
-                                                    <form action="{{ route('employee.tasks.subtasks.attachments.destroy', ['task' => $task, 'subtask' => $subtask, 'attachment' => $attachment]) }}" method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-slate-400 hover:text-red-600" aria-label="Hapus lampiran {{ $attachment->original_name }}">Hapus</button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        @endforeach
+                                                <div class="border-b border-slate-100 px-6 py-5">
+                                                    <h3 id="completion-modal-title" class="text-lg font-bold text-slate-900">Laporkan Penyelesaian</h3>
+                                                    <p class="mt-1 text-sm text-slate-500">{{ $subtask->title }}</p>
+                                                </div>
+
+                                                <div class="space-y-4 px-6 py-5">
+                                                    <div>
+                                                        <label for="completion-note-{{ $subtask->id }}" class="block text-sm font-semibold text-slate-700">Rincian yang sudah diselesaikan</label>
+                                                        <textarea id="completion-note-{{ $subtask->id }}" name="completion_note" rows="5" required maxlength="5000" class="mt-1.5 block w-full rounded-xl border-slate-300 text-sm focus:border-red-600 focus:ring-red-600" placeholder="Jelaskan pekerjaan yang sudah diselesaikan secara rinci...">{{ old('completion_note') }}</textarea>
+                                                        @error('completion_note')
+                                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                        @enderror
+                                                    </div>
+
+                                                    <div>
+                                                        <label for="completion-files-{{ $subtask->id }}" class="block text-sm font-semibold text-slate-700">Bukti penyelesaian <span class="font-normal text-slate-400">(wajib, maks. 5 file, 10 MB per file)</span></label>
+                                                        <input id="completion-files-{{ $subtask->id }}" type="file" name="attachments[]" required multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip" class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-3 file:py-2.5 file:text-xs file:font-semibold file:text-slate-700 hover:file:bg-slate-200">
+                                                        @error('attachments')
+                                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                        @enderror
+                                                        @error('attachments.*')
+                                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex justify-end gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4">
+                                                    <button type="button" @click="showCompletionModal = false" class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">Batal</button>
+                                                    <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Kirim Penyelesaian</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
-                                @endif
-
-                                @if ($isAssignee && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
-                                    <form action="{{ route('employee.tasks.subtasks.attachments.store', ['task' => $task, 'subtask' => $subtask]) }}" method="POST" enctype="multipart/form-data" class="mt-3 flex flex-wrap items-end gap-3">
-                                        @csrf
-                                        <div>
-                                            <label for="attachment-{{ $subtask->id }}" class="block text-xs font-semibold text-slate-600">Tambah lampiran (maks. 10 MB)</label>
-                                            <input id="attachment-{{ $subtask->id }}" type="file" name="attachment" required accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip" class="mt-1 block max-w-full text-xs text-slate-600">
-                                            @error('attachment')
-                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                        <button type="submit" class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700">Unggah</button>
-                                    </form>
-                                @endif
-
-                                @if (in_array($task->status, ['pending', 'in_progress', 'revision'], true))
-                                    <form
-                                        action="{{ route('employee.tasks.subtasks.update', ['task' => $task, 'subtask' => $subtask]) }}"
-                                        method="POST"
-                                        class="mt-3 space-y-2 w-full max-w-xs"
-                                    >
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <div class="flex items-center gap-3">
-                                            <label class="text-xs font-semibold text-slate-600">
-                                                Status:
-                                            </label>
-                                            <select
-                                                name="status"
-                                                class="border rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                            >
-                                                <option value="pending"
-                                                    {{ $subtask->status === 'pending' ? 'selected' : '' }}>
-                                                    Belum Selesai
-                                                </option>
-                                                <option value="completed"
-                                                    {{ $subtask->status === 'completed' ? 'selected' : '' }}>
-                                                    Selesai
-                                                </option>
-                                            </select>
-                                        </div>
-
-                                        @if ($subtask->status === 'completed')
-                                            <div>
-                                                <label class="block text-xs font-semibold text-slate-600">
-                                                    Catatan Penyelesaian (opsional)
-                                                </label>
-                                                <textarea
-                                                    name="completion_note"
-                                                    rows="2"
-                                                    class="mt-1 block w-full rounded-md border border-slate-300 bg-white py-2 px-3 text-sm ring-1 ring-inset ring-slate-300 focus:border-red-600 focus:ring-red-600 sm:text-sm"
-                                                >{{ $subtask->completion_note }}</textarea>
-                                            </div>
-                                        @else
-                                            <div class="hidden">
-                                                <input type="text" name="completion_note">
-                                            </div>
-                                        @endif
-
-                                        <button
-                                            type="submit"
-                                            class="inline-flex items-center justify-center gap-2 px-2 py-1 text-xs font-medium rounded-md border border-transparent bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-                                        >
-                                            Perbarui
-                                        </button>
-                                    </form>
                                 @endif
                             </div>
                         </div>
