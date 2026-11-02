@@ -4,17 +4,78 @@ namespace App\Http\Controllers\ProjectManager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Models\Subtask;
+use App\Models\SubtaskAttachment;
 use App\Models\Task;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\StreamedResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProjectTaskController extends Controller
 {
+    public function allTasks(Request $request): View
+    {
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'filter' => ['nullable', 'in:all,review'],
+        ]);
+
+        $search = trim($validated['search'] ?? '');
+        $reviewOnly = ($validated['filter'] ?? 'all') === 'review';
+        $taskFilter = fn ($query) => $reviewOnly
+            ? $query->where('status', 'waiting_review')
+            : $query;
+
+        $projects = Project::query()
+            ->where('created_by', Auth::id())
+            ->when($search !== '', fn ($query) => $query
+                ->where('name', 'like', '%'.$search.'%'))
+            ->whereHas('tasks', $taskFilter)
+            ->with([
+                'tasks' => fn ($query) => $taskFilter($query)
+                    ->with([
+                        'stage',
+                        'assignees',
+                        'subtasks',
+                    ])
+                    ->latest(),
+            ])
+            ->withCount([
+                'tasks as waiting_review_tasks_count' => fn ($query) => $query
+                    ->where('status', 'waiting_review'),
+            ])
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        $reviewTaskCount = Project::query()
+            ->where('created_by', Auth::id())
+            ->whereHas('tasks', fn ($query) => $query
+                ->where('status', 'waiting_review'))
+            ->withCount([
+                'tasks as waiting_review_tasks_count' => fn ($query) => $query
+                    ->where('status', 'waiting_review'),
+            ])
+            ->get()
+            ->sum('waiting_review_tasks_count');
+
+        return view(
+            'project-manager.tasks.all',
+            compact(
+                'projects',
+                'search',
+                'reviewOnly',
+                'reviewTaskCount'
+            )
+        );
+    }
+
     public function index(Project $project): View
     {
         $this->authorizeProject($project);
@@ -224,22 +285,21 @@ class ProjectTaskController extends Controller
         );
     }
 
-    public function reviews(Project $project): View
-    {
+    public function downloadAttachment(
+        Project $project,
+        Task $task,
+        Subtask $subtask,
+        SubtaskAttachment $attachment
+    ): StreamedResponse {
         $this->authorizeProject($project);
+        $this->authorizeTask($project, $task);
+        abort_unless($subtask->task_id === $task->id, 404);
+        abort_unless($attachment->subtask_id === $subtask->id, 404);
+        abort_unless(Storage::disk('local')->exists($attachment->file_path), 404);
 
-        $tasks = $project->tasks()
-            ->where('status', 'waiting_review')
-            ->with([
-                'stage',
-                'assignees',
-            ])
-            ->latest()
-            ->get();
-
-        return view(
-            'project-manager.tasks.reviews',
-            compact('project', 'tasks')
+        return Storage::disk('local')->download(
+            $attachment->file_path,
+            $attachment->original_name
         );
     }
 

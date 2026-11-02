@@ -97,6 +97,82 @@ it('allows an assigned employee to start a pending task', function () {
     expect($task->fresh()->status)->toBe('in_progress');
 });
 
+it('lists manager tasks grouped by project with project search and a review filter', function () {
+    [
+        'manager' => $manager,
+        'employee' => $employee,
+        'project' => $reviewProject,
+        'task' => $reviewTask,
+    ] = createTaskReviewContext('waiting_review');
+
+    $otherProject = Project::create([
+        'created_by' => $manager->id,
+        'name' => 'Other project',
+        'status' => 'active',
+    ]);
+    $otherStage = ProjectStage::create([
+        'project_id' => $otherProject->id,
+        'name' => 'Planning',
+        'position' => 1,
+    ]);
+    $otherTask = Task::create([
+        'project_id' => $otherProject->id,
+        'project_stage_id' => $otherStage->id,
+        'created_by' => $manager->id,
+        'title' => 'Regular task',
+        'status' => 'pending',
+    ]);
+    $otherTask->assignees()->attach($employee);
+
+    $taskListUrl = route('project-manager.tasks.index');
+
+    $this->actingAs($manager)
+        ->get($taskListUrl)
+        ->assertOk()
+        ->assertSee($reviewProject->name)
+        ->assertSee($otherProject->name)
+        ->assertSee($reviewTask->title)
+        ->assertSee($otherTask->title)
+        ->assertSee(
+            route('project-manager.projects.tasks.index', $reviewProject),
+            false
+        )
+        ->assertSee('Lihat Task Project')
+        ->assertDontSee(
+            route('project-manager.projects.tasks.index', [
+                'project' => $reviewProject,
+                'stage' => $reviewTask->project_stage_id,
+            ]),
+            false
+        );
+
+    $this->actingAs($manager)
+        ->get($taskListUrl.'?filter=review')
+        ->assertOk()
+        ->assertSee($reviewTask->title)
+        ->assertDontSee($otherTask->title);
+
+    $this->actingAs($manager)
+        ->get($taskListUrl.'?search=Review')
+        ->assertOk()
+        ->assertSee($reviewProject->name)
+        ->assertDontSee($otherProject->name);
+
+    $anotherManagerProject = Project::create([
+        'created_by' => User::factory()->create([
+            'username' => fake()->unique()->userName(),
+            'role' => 'project_manager',
+            'must_change_password' => false,
+        ])->id,
+        'name' => 'Private project',
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($manager)
+        ->get($taskListUrl)
+        ->assertDontSee($anotherManagerProject->name);
+});
+
 it('keeps revision history through follow-up cycles until approval', function () {
     [
         'manager' => $manager,
@@ -109,11 +185,6 @@ it('keeps revision history through follow-up cycles until approval', function ()
     $this->actingAs($employee)
         ->post(route('employee.tasks.submit', $task))
         ->assertRedirect();
-
-    $this->actingAs($manager)
-        ->get(route('project-manager.projects.tasks.reviews', $project))
-        ->assertOk()
-        ->assertSee('Review task');
 
     $this->actingAs($manager)
         ->get(route('project-manager.projects.tasks.show', [$project, $task]))

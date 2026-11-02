@@ -964,15 +964,15 @@ Attachments
 
 ## 19.2 Current UI
 
-Attachment dapat ditampilkan pada detail task karena subtask di-load bersama relation `attachments`.
+Attachment dapat diunggah dari detail task Employee, diunduh oleh Employee yang ditugaskan maupun PM pemilik project, dan dihapus oleh uploader selama task masih dapat diedit. File disimpan pada local disk privat; validasi membatasi ukuran hingga 10 MB dan tipe file yang diizinkan.
 
 ### Status
 
-**STRUKTUR + DISPLAY SUDAH ADA**.
+**UPLOAD, DISPLAY, DOWNLOAD TEROTORISASI, DAN DELETE TERBATAS SUDAH ADA**.
 
 ## 19.3 Yang Belum Ada
 
-Tidak ditemukan endpoint untuk:
+Belum ada endpoint untuk:
 
 ```text
 upload attachment
@@ -981,11 +981,9 @@ remove attachment
 download/stream attachment melalui route aplikasi
 ```
 
-Validasi tipe file, ukuran file, dan policy akses juga belum terlihat dalam source controller yang ditinjau.
-
 ### Status
 
-**UPLOAD/CONTROL BELUM ADA**.
+Belum ada penggantian file; uploader dapat menghapus file lama lalu mengunggah yang baru.
 
 ---
 
@@ -1106,7 +1104,7 @@ Aturan yang diterapkan:
 
 ## Kondisi sekarang
 
-PM pemilik project dapat membuka antrian review dan melakukan:
+PM dapat membuka satu halaman Task berisi task lintas project yang dikelompokkan berdasarkan project, mencari berdasarkan nama project, memfilter task yang perlu direview, lalu melakukan:
 
 ```text
 Review Queue
@@ -1117,7 +1115,7 @@ Revision Notes
 
 ### Status
 
-**SUDAH ADA** untuk antrian per project, approve, dan request revision.
+**SUDAH ADA** untuk daftar lintas project dan filter review dalam satu halaman, approve, dan request revision.
 
 ## Alur Review yang Tersedia
 
@@ -1340,8 +1338,7 @@ GET    /profile
 Task update/status
 Subtask CRUD
 Subtask complete
-Attachment upload
-Attachment delete/download
+Attachment replace
 Submit review
 PM review queue
 Approve task
@@ -1484,12 +1481,10 @@ Belum ada action untuk:
 
 ### 2. Attachment Actions
 
-Belum ada:
-
-- upload;
-- delete;
-- download/stream aman;
-- validasi file.
+- [x] Upload dengan validasi tipe dan ukuran file.
+- [x] Download melalui route terotorisasi.
+- [x] Hapus lampiran sendiri selama task dapat diedit.
+- Penggantian lampiran langsung belum tersedia.
 
 ### 3. Submit for Review
 
@@ -1686,17 +1681,16 @@ Task menyimpan `review_cycle`; setiap submit baru menaikkan nomor putaran dan it
 Alur submit/review/revisi task sudah tersedia. Prioritas berikutnya:
 
 ```text
-1. Attachment upload/actions
+1. Stage completion rule
    ↓
-2. Stage completion rule
+2. Project completion rule
    ↓
-3. Project completion rule
+3. Dashboard metrics
    ↓
-4. Dashboard metrics
+4. Notification and activity history
    ↓
-5. Notification and activity history
+5. End-to-end testing across all roles
    ↓
-6. End-to-end testing across all roles
 ```
 
 Alasannya:

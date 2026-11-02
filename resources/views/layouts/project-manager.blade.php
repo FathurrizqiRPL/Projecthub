@@ -128,11 +128,14 @@
                 </a>
 
 
-                {{-- Tasks --}}
-                <div
-                    class="flex cursor-not-allowed items-center gap-3
-                           rounded-xl px-4 py-3 text-sm
-                           font-medium text-slate-400"
+                <a
+                    href="{{ route('project-manager.tasks.index') }}"
+                    wire:navigate
+                    class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
+                        {{ request()->routeIs('project-manager.tasks.*')
+                            ? 'bg-red-50 font-semibold text-red-600'
+                            : 'font-medium text-slate-600 hover:bg-red-50 hover:text-red-600'
+                        }}"
                 >
                     <svg
                         class="h-5 w-5"
@@ -149,15 +152,7 @@
                     </svg>
 
                     Tasks
-
-                    <span
-                        class="ml-auto rounded-full bg-slate-100
-                               px-2 py-0.5 text-[10px] font-semibold
-                               text-slate-400"
-                    >
-                        Soon
-                    </span>
-                </div>
+                </a>
 
             </nav>
 

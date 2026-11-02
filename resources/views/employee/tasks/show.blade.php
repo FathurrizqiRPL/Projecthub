@@ -400,6 +400,41 @@
                                     @endif
                                 </div>
 
+                                @if ($subtask->attachments->isNotEmpty())
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        @foreach ($subtask->attachments as $attachment)
+                                            <div class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs">
+                                                <a href="{{ route('employee.tasks.subtasks.attachments.download', ['task' => $task, 'subtask' => $subtask, 'attachment' => $attachment]) }}"
+                                                    class="font-medium text-red-700 hover:underline">
+                                                    {{ $attachment->original_name }}
+                                                </a>
+                                                @if ($attachment->uploaded_by === auth()->id()
+                                                    && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
+                                                    <form action="{{ route('employee.tasks.subtasks.attachments.destroy', ['task' => $task, 'subtask' => $subtask, 'attachment' => $attachment]) }}" method="POST">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-slate-400 hover:text-red-600" aria-label="Hapus lampiran {{ $attachment->original_name }}">Hapus</button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                @if ($isAssignee && in_array($task->status, ['pending', 'in_progress', 'revision'], true))
+                                    <form action="{{ route('employee.tasks.subtasks.attachments.store', ['task' => $task, 'subtask' => $subtask]) }}" method="POST" enctype="multipart/form-data" class="mt-3 flex flex-wrap items-end gap-3">
+                                        @csrf
+                                        <div>
+                                            <label for="attachment-{{ $subtask->id }}" class="block text-xs font-semibold text-slate-600">Tambah lampiran (maks. 10 MB)</label>
+                                            <input id="attachment-{{ $subtask->id }}" type="file" name="attachment" required accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip" class="mt-1 block max-w-full text-xs text-slate-600">
+                                            @error('attachment')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <button type="submit" class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700">Unggah</button>
+                                    </form>
+                                @endif
+
                                 @if (in_array($task->status, ['pending', 'in_progress', 'revision'], true))
                                     <form
                                         action="{{ route('employee.tasks.subtasks.update', ['task' => $task, 'subtask' => $subtask]) }}"

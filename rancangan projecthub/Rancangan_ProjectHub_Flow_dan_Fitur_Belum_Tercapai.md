@@ -296,6 +296,7 @@ COMPLETED       REVISION
 ### Status saat ini
 
 - Task list: **sudah ada**
+- Daftar task PM lintas project: **sudah ada**, dikelompokkan per project dengan pencarian nama project dan filter review dalam satu halaman.
 - Task detail: **sudah ada**
 - Assign task ke Employee: **ada konsep, perlu verifikasi penuh**
 - Status task: **sebagian sudah ada / perlu verifikasi**
@@ -891,6 +892,7 @@ Berdasarkan source yang sudah ditinjau:
 - Start stage.
 - Next stage.
 - Task area.
+- PM task list grouped by project, searchable by project name, with an in-page review filter.
 - Employee task area.
 - Subtask actions (create, complete, revert, completion_note).
 - Relasi project-member-task-subtask-attachment sudah terlihat pada struktur aplikasi.
@@ -916,10 +918,9 @@ Urutan berikut dapat dijadikan backlog utama.
 
 ## Prioritas 3 — Attachment
 
-- Upload file.
-- Validasi file.
-- Daftar file pada detail task.
-- Akses file yang aman.
+- [x] Upload file dengan validasi tipe dan batas ukuran.
+- [x] Daftar serta download file pada detail task dengan pemeriksaan akses.
+- [x] Employee dapat menghapus lampirannya saat task masih dapat diedit.
 
 ## Prioritas 4 — Submit for Review
 

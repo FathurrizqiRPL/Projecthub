@@ -145,6 +145,11 @@ Route::middleware([
         );
 
         Route::get(
+            'tasks',
+            [ProjectTaskController::class, 'allTasks']
+        )->name('tasks.index');
+
+        Route::get(
             'projects/{project}/workflow',
             [ProjectStageController::class, 'edit']
         )->name('projects.workflow.edit');
@@ -190,14 +195,14 @@ Route::middleware([
         )->name('projects.tasks.store');
 
         Route::get(
-            'projects/{project}/tasks/reviews',
-            [ProjectTaskController::class, 'reviews']
-        )->name('projects.tasks.reviews');
-
-        Route::get(
             'projects/{project}/tasks/{task}',
             [ProjectTaskController::class, 'show']
         )->name('projects.tasks.show');
+
+        Route::get(
+            'projects/{project}/tasks/{task}/subtasks/{subtask}/attachments/{attachment}',
+            [ProjectTaskController::class, 'downloadAttachment']
+        )->name('projects.tasks.attachments.download');
 
         Route::post(
             'projects/{project}/tasks/{task}/approve',
@@ -257,6 +262,21 @@ Route::middleware([
             'tasks/{task}/subtasks/{subtask}',
             [SubtaskController::class, 'update']
         )->name('tasks.subtasks.update');
+
+        Route::post(
+            'tasks/{task}/subtasks/{subtask}/attachments',
+            [SubtaskController::class, 'uploadAttachment']
+        )->name('tasks.subtasks.attachments.store');
+
+        Route::get(
+            'tasks/{task}/subtasks/{subtask}/attachments/{attachment}',
+            [SubtaskController::class, 'downloadAttachment']
+        )->name('tasks.subtasks.attachments.download');
+
+        Route::delete(
+            'tasks/{task}/subtasks/{subtask}/attachments/{attachment}',
+            [SubtaskController::class, 'deleteAttachment']
+        )->name('tasks.subtasks.attachments.destroy');
 
         Route::patch(
             'tasks/{task}/revisions/{revisionItem}',

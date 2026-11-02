@@ -15,9 +15,9 @@
         </a>
 
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('project-manager.projects.tasks.reviews', $project) }}" wire:navigate
+            <a href="{{ route('project-manager.tasks.index', ['filter' => 'review']) }}" wire:navigate
                 class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
-                Antrian Review
+                Task Perlu Review
             </a>
 
             @if (!in_array($project->status, ['completed', 'cancelled']))

@@ -4,13 +4,82 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\Subtask;
+use App\Models\SubtaskAttachment;
 use App\Models\Task;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\StreamedResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class SubtaskController extends Controller
 {
+    public function uploadAttachment(
+        Request $request,
+        Task $task,
+        Subtask $subtask
+    ): RedirectResponse {
+        $this->authorizeTaskAndSubtask($task, $subtask);
+        $this->ensureTaskCanBeEdited($task);
+
+        $validated = $request->validate([
+            'attachment' => [
+                'required',
+                'file',
+                'max:10240',
+                'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip',
+            ],
+        ]);
+
+        $file = $validated['attachment'];
+        $path = $file->store('subtask-attachments', 'local');
+
+        $subtask->attachments()->create([
+            'uploaded_by' => Auth::id(),
+            'original_name' => $file->getClientOriginalName(),
+            'file_path' => $path,
+            'mime_type' => $file->getMimeType(),
+            'file_size' => $file->getSize(),
+        ]);
+
+        return redirect()
+            ->route('employee.tasks.show', ['task' => $task])
+            ->with('success', 'Lampiran berhasil diunggah.');
+    }
+
+    public function downloadAttachment(
+        Task $task,
+        Subtask $subtask,
+        SubtaskAttachment $attachment
+    ): StreamedResponse {
+        $this->authorizeTaskAndSubtask($task, $subtask);
+        abort_unless($attachment->subtask_id === $subtask->id, 404);
+        abort_unless(Storage::disk('local')->exists($attachment->file_path), 404);
+
+        return Storage::disk('local')->download(
+            $attachment->file_path,
+            $attachment->original_name
+        );
+    }
+
+    public function deleteAttachment(
+        Task $task,
+        Subtask $subtask,
+        SubtaskAttachment $attachment
+    ): RedirectResponse {
+        $this->authorizeTaskAndSubtask($task, $subtask);
+        $this->ensureTaskCanBeEdited($task);
+        abort_unless($attachment->subtask_id === $subtask->id, 404);
+        abort_unless($attachment->uploaded_by === Auth::id(), 403);
+
+        Storage::disk('local')->delete($attachment->file_path);
+        $attachment->delete();
+
+        return redirect()
+            ->route('employee.tasks.show', ['task' => $task])
+            ->with('success', 'Lampiran berhasil dihapus.');
+    }
+
     /**
      * Store a newly created resource in storage.
      */

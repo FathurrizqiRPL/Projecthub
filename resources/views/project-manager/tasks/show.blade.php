@@ -261,7 +261,7 @@
 
                                         <div class="flex flex-wrap gap-2 mt-2">
                                             @foreach ($subtask->attachments as $attachment)
-                                                <div class="inline-flex items-center max-w-full gap-2 px-3 py-2 text-xs bg-white border rounded-lg border-slate-200 text-slate-600">
+                                                <a href="{{ route('project-manager.projects.tasks.attachments.download', ['project' => $project, 'task' => $task, 'subtask' => $subtask, 'attachment' => $attachment]) }}" class="inline-flex items-center max-w-full gap-2 px-3 py-2 text-xs bg-white border rounded-lg border-slate-200 text-red-700 hover:border-red-300">
                                                     <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.172 7l-6.586 6.586a2 2 0 1 0 2.828 2.828L18 9.828a4 4 0 1 0-5.657-5.657L5.757 10.757a6 6 0 1 0 8.486 8.486L20.5 13"/>
                                                     </svg>
@@ -269,7 +269,7 @@
                                                     <span class="truncate">
                                                         {{ $attachment->original_name }}
                                                     </span>
-                                                </div>
+                                                </a>
                                             @endforeach
                                         </div>
                                     </div>
