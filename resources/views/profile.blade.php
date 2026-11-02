@@ -1,29 +1,28 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+@extends(auth()->user()->role === 'admin' ? 'layouts.admin' : (auth()->user()->role === 'project_manager' ? 'layouts.project-manager' : 'layouts.employee'))
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.update-profile-information-form />
-                </div>
+@section('title', 'Profil')
+@section('header', 'Profil')
+
+@section('content')
+    <div class="mx-auto max-w-5xl space-y-6">
+        <section class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
+            <div class="max-w-2xl">
+                <livewire:profile.update-profile-information-form />
             </div>
+        </section>
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.update-password-form />
-                </div>
+        <section class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
+            <div class="max-w-2xl">
+                <livewire:profile.update-password-form />
             </div>
+        </section>
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
+        @if (auth()->user()->role === 'admin')
+            <section class="rounded-2xl border border-red-100 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
+                <div class="max-w-2xl">
                     <livewire:profile.delete-user-form />
                 </div>
-            </div>
-        </div>
+            </section>
+        @endif
     </div>
-</x-app-layout>
+@endsection

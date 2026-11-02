@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Detail Task')
-@section('header', 'Detail Task')
+@section('title', 'Detail tugas')
+@section('header', 'Detail tugas')
 
 @section('content')
 @php
@@ -10,7 +10,7 @@
         : match ($task->status) {
         'pending' => 'Belum Dikerjakan',
         'in_progress' => 'Dikerjakan',
-        'waiting_review' => 'Menunggu Review',
+        'waiting_review' => 'Menunggu peninjauan',
         'revision' => 'Revisi',
         'completed' => 'Selesai',
         default => ucfirst(str_replace('_', ' ', $task->status)),
@@ -30,7 +30,7 @@
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
         </svg>
-        Kembali ke Task
+        Kembali ke Tugas
     </a>
 
     @if (session('success'))
@@ -41,12 +41,12 @@
 
     @if ($task->completionException)
         <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            <p class="font-semibold">Task ini dikecualikan saat project ditutup.</p>
+            <p class="font-semibold">Tugas ini dikecualikan saat proyek ditutup.</p>
             <p class="mt-1">Alasan: {{ $task->completionException->reason }}</p>
         </div>
     @elseif (! $canModifyProject && $task->status !== 'completed')
         <div class="rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600">
-            Project sudah ditutup. Task ini tidak dapat dilanjutkan.
+            Proyek sudah ditutup. Tugas ini tidak dapat dilanjutkan.
         </div>
     @endif
 
@@ -72,7 +72,7 @@
 
                 <div class="flex flex-wrap mt-3 text-sm gap-x-5 gap-y-2 text-slate-500">
                     <span>
-                        Project:
+                        Proyek:
                         <strong class="font-semibold text-slate-700">
                             {{ $project->name }}
                         </strong>
@@ -86,7 +86,7 @@
                     </span>
 
                     <span>
-                        Deadline:
+                        Tenggat:
                         <strong class="font-semibold text-slate-700">
                             {{ $task->deadline?->locale('id')->translatedFormat('d F Y') ?? '-' }}
                         </strong>
@@ -107,7 +107,7 @@
 
         <div class="pt-6 border-t mt-7 border-slate-100">
             <p class="text-xs font-semibold tracking-wide uppercase text-slate-400">
-                Anggota Task
+                Anggota tugas
             </p>
 
             <div class="flex flex-wrap gap-2 mt-3">
@@ -123,7 +123,7 @@
                     </div>
                 @empty
                     <p class="text-sm text-slate-400">
-                        Belum ada anggota pada task ini.
+                        Belum ada anggota pada tugas ini.
                     </p>
                 @endforelse
             </div>
@@ -133,9 +133,9 @@
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
         <div class="flex items-end justify-between gap-4">
             <div>
-                <h3 class="font-bold text-slate-900">Progress Task</h3>
+                <h3 class="font-bold text-slate-900">Progres tugas</h3>
                 <p class="mt-1 text-sm text-slate-500">
-                    Dihitung otomatis berdasarkan subtask yang selesai.
+                    Dihitung otomatis berdasarkan subtugas yang selesai.
                 </p>
             </div>
 
@@ -151,12 +151,12 @@
 
         <div class="flex items-center justify-between gap-4 mt-3 text-xs">
             <span class="text-slate-400">
-                {{ $completedSubtasks }} dari {{ $totalSubtasks }} subtask selesai
+                {{ $completedSubtasks }} dari {{ $totalSubtasks }} subtugas selesai
             </span>
 
             @if ($progress === 100 && $totalSubtasks > 0)
                 <span class="font-semibold text-emerald-600">
-                    Seluruh subtask selesai
+                    Seluruh subtugas selesai
                 </span>
             @endif
         </div>
@@ -164,9 +164,9 @@
 
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
         <div>
-            <h3 class="font-bold text-slate-900">Subtask</h3>
+            <h3 class="font-bold text-slate-900">Subtugas</h3>
             <p class="mt-1 text-sm text-slate-500">
-                Rincian pekerjaan yang dibuat dan dikerjakan oleh anggota task.
+                Rincian pekerjaan yang dibuat dan dikerjakan oleh anggota tugas.
             </p>
         </div>
 
@@ -179,11 +179,11 @@
                 </div>
 
                 <p class="mt-4 text-sm font-semibold text-slate-700">
-                    Belum ada subtask
+                    Belum ada subtugas
                 </p>
 
                 <p class="mt-1 text-xs leading-5 text-slate-400">
-                    Subtask akan tampil setelah anggota mulai membagi pekerjaan pada task ini.
+                    Subtugas akan tampil setelah anggota mulai membagi pekerjaan pada tugas ini.
                 </p>
             </div>
         @else
@@ -299,7 +299,7 @@
         <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
             <h3 class="font-bold text-slate-900">Riwayat Item Revisi</h3>
             <p class="mt-1 text-sm text-slate-500">
-                Catatan disimpan per putaran review dan tidak dihapus saat task diajukan ulang.
+                Catatan disimpan per putaran Peninjauan dan tidak dihapus saat Tugas diajukan ulang.
             </p>
 
             <div class="mt-5 space-y-5">
@@ -349,9 +349,9 @@
 
     @if ($canModifyProject && $task->status === 'waiting_review')
         <div class="rounded-2xl border border-amber-200 bg-[#fffdfa] p-6 shadow-sm">
-            <h3 class="font-bold text-slate-900">Keputusan Review</h3>
+            <h3 class="font-bold text-slate-900">Keputusan peninjauan</h3>
             <p class="mt-1 text-sm text-slate-500">
-                Setujui task atau kirim daftar revisi. Tulis satu item revisi pada setiap baris.
+                Setujui Tugas atau kirim daftar revisi. Tulis satu item revisi pada setiap baris.
             </p>
 
             <div class="grid gap-6 mt-5 lg:grid-cols-2">
@@ -365,7 +365,7 @@
                         type="submit"
                         class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
                     >
-                        Setujui dan Selesaikan Task
+                        Setujui dan Selesaikan Tugas
                     </button>
                 </form>
 
@@ -385,7 +385,7 @@
                             rows="5"
                             required
                             class="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-red-600 focus:ring-red-600"
-                            placeholder="Perbaiki validasi login&#10;Sesuaikan tampilan mobile"
+                            placeholder="Perbaiki validasi Masuk&#10;Sesuaikan tampilan mobile"
                         >{{ old('revision_notes') }}</textarea>
                         @error('revision_notes')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>

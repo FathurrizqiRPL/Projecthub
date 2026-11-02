@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Buat Task')
-@section('header', 'Buat Task')
+@section('title', 'Buat Tugas')
+@section('header', 'Buat Tugas')
 
 @section('content')
 <div class="space-y-6">
@@ -10,15 +10,15 @@
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
         </svg>
-        Kembali ke Task
+        Kembali ke Tugas
     </a>
 
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
         <div class="mb-7">
             <p class="text-sm font-semibold text-red-600">{{ $project->name }}</p>
-            <h2 class="mt-1 text-2xl font-bold text-slate-900">Buat Task Baru</h2>
+            <h2 class="mt-1 text-2xl font-bold text-slate-900">Buat tugas Baru</h2>
             <p class="mt-2 text-sm leading-6 text-slate-500">
-                Tambahkan pekerjaan dan pilih anggota project yang akan mengerjakannya bersama.
+                Tambahkan pekerjaan dan pilih anggota proyek yang akan mengerjakannya bersama.
             </p>
         </div>
 
@@ -27,9 +27,9 @@
 
             {{-- Judul --}}
             <div>
-                <label for="title" class="text-sm font-semibold text-slate-700">Judul Task</label>
+                <label for="title" class="text-sm font-semibold text-slate-700">Judul tugas</label>
                 <input id="title" name="title" type="text" value="{{ old('title') }}" required
-                    placeholder="Contoh: Menambahkan fitur foto profile"
+                    placeholder="Contoh: Menambahkan fitur foto Profil"
                     class="block w-full mt-2 text-sm bg-white shadow-sm rounded-xl border-slate-300 text-slate-700 focus:border-red-500 focus:ring-red-500">
                 @error('title')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -49,10 +49,10 @@
 
             {{-- Stage --}}
             <div>
-                <label for="project_stage_id" class="text-sm font-semibold text-slate-700">Tahap Project</label>
+                <label for="project_stage_id" class="text-sm font-semibold text-slate-700">Tahap proyek</label>
                 <select id="project_stage_id" name="project_stage_id" required
                     class="block w-full mt-2 text-sm bg-white shadow-sm rounded-xl border-slate-300 text-slate-700 focus:border-red-500 focus:ring-red-500">
-                    <option value="">Pilih tahap project</option>
+                    <option value="">Pilih tahap proyek</option>
                     @foreach ($project->stages->whereNull('completed_at')->sortBy('position') as $stage)
                         <option value="{{ $stage->id }}"
                             @selected(old('project_stage_id', request('stage') ?? $project->current_stage_id) == $stage->id)>
@@ -61,26 +61,26 @@
                     @endforeach
                 </select>
                 @if ($project->stages->whereNull('completed_at')->isEmpty())
-                    <p class="mt-2 text-xs text-slate-500">Semua stage sudah selesai. Task baru tidak dapat ditambahkan.</p>
+                    <p class="mt-2 text-xs text-slate-500">Semua tahap sudah selesai. tugas baru tidak dapat ditambahkan.</p>
                 @endif
                 @error('project_stage_id')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
 
-            {{-- Anggota Task --}}
+            {{-- Anggota tugas --}}
             <div>
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Anggota Task</label>
+                    <label class="text-sm font-semibold text-slate-700">Anggota tugas</label>
                     <p class="mt-1 text-xs leading-5 text-slate-400">
-                        Pilih satu atau beberapa anggota yang akan mengerjakan task ini bersama.
+                        Pilih satu atau beberapa anggota yang akan mengerjakan tugas ini bersama.
                     </p>
                 </div>
 
                 @if ($project->members->isEmpty())
                     <div class="p-5 mt-3 text-center border border-dashed rounded-xl border-slate-200">
-                        <p class="text-sm font-semibold text-slate-600">Belum ada anggota project</p>
-                        <p class="mt-1 text-xs text-slate-400">Tambahkan anggota ke project sebelum membuat task.</p>
+                        <p class="text-sm font-semibold text-slate-600">Belum ada anggota proyek</p>
+                        <p class="mt-1 text-xs text-slate-400">Tambahkan anggota ke proyek sebelum membuat tugas.</p>
                     </div>
                 @else
                     <div class="grid gap-2 mt-3 sm:grid-cols-2">
@@ -113,9 +113,9 @@
                 @enderror
             </div>
 
-            {{-- Deadline --}}
+            {{-- Tenggat --}}
             <div>
-                <label for="deadline" class="text-sm font-semibold text-slate-700">Deadline</label>
+                <label for="deadline" class="text-sm font-semibold text-slate-700">Tenggat</label>
                 <input id="deadline" name="deadline" type="date" value="{{ old('deadline') }}"
                     @if ($project->start_date) min="{{ $project->start_date->format('Y-m-d') }}" @endif
                     @if ($project->deadline) max="{{ $project->deadline->format('Y-m-d') }}" @endif
@@ -124,7 +124,7 @@
                     @if ($project->start_date && $project->deadline)
                         Rentang project: {{ $project->start_date->locale('id')->translatedFormat('d F Y') }} - {{ $project->deadline->locale('id')->translatedFormat('d F Y') }}.
                     @else
-                        Deadline task bersifat opsional.
+                        Tenggat Tugas bersifat opsional.
                     @endif
                 </p>
                 @error('deadline')
@@ -140,7 +140,7 @@
                 </a>
                 <button type="submit" @disabled($project->members->isEmpty())
                     class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300">
-                    Buat Task
+                    Buat Tugas
                 </button>
             </div>
         </form>

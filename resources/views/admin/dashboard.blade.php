@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Dashboard Admin')
+@section('title', 'Dasbor admin')
 
-@section('header', 'Dashboard')
+@section('header', 'Dasbor')
 
 @section('content')
 
@@ -22,7 +22,7 @@
 
         <p class="max-w-2xl mt-2 text-sm leading-6 text-slate-500">
             Kelola akun pengguna dan hak akses ProjectHub
-            melalui dashboard Administrator.
+            melalui Dasbor administrator.
         </p>
     </div>
 
@@ -49,13 +49,13 @@
         </div>
 
 
-        {{-- Project Manager --}}
+        {{-- Manajer proyek --}}
         <div
             class="rounded-2xl border border-slate-200
                    bg-[#fffdfa] p-5 shadow-sm"
         >
             <p class="text-sm font-medium text-slate-500">
-                Project Manager
+                Manajer proyek
             </p>
 
             <p class="mt-3 text-3xl font-bold text-slate-900">
@@ -63,12 +63,12 @@
             </p>
 
             <p class="mt-2 text-xs text-slate-400">
-                Akun Project Manager
+                Akun Manajer proyek
             </p>
         </div>
 
 
-        {{-- Employee --}}
+        {{-- Karyawan --}}
         <div
             class="rounded-2xl border border-slate-200
                    bg-[#fffdfa] p-5 shadow-sm"
@@ -87,7 +87,7 @@
         </div>
 
 
-        {{-- Active User --}}
+        {{-- Aktif User --}}
         <div
             class="rounded-2xl border border-slate-200
                    bg-[#fffdfa] p-5 shadow-sm"
@@ -185,7 +185,7 @@
                                 @if ($user->role === 'admin')
                                     Administrator
                                 @elseif ($user->role === 'project_manager')
-                                    Project Manager
+                                    Manajer proyek
                                 @else
                                     Karyawan
                                 @endif

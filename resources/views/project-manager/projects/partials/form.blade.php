@@ -1,6 +1,6 @@
 <div>
     <label class="text-sm font-semibold text-slate-700">
-        Nama Project
+        Nama proyek
     </label>
 
     <input
@@ -67,7 +67,7 @@
 
     <div>
         <label class="text-sm font-semibold text-slate-700">
-            Deadline
+            Tenggat
         </label>
 
         <input
@@ -104,16 +104,16 @@
     >
         @php
             $projectStatusOptions = isset($project) && $project->status === 'completed'
-                ? ['completed' => 'Completed']
+                ? ['completed' => 'Selesai']
                 : (isset($project) && $project->current_stage_id !== null
                     ? [
-                        'active' => 'Active',
-                        'cancelled' => 'Cancelled',
+                        'active' => 'Aktif',
+                        'cancelled' => 'Dibatalkan',
                     ]
                     : [
-                    'draft' => 'Draft',
-                    'active' => 'Active',
-                    'cancelled' => 'Cancelled',
+                    'draft' => 'Draf',
+                    'active' => 'Aktif',
+                    'cancelled' => 'Dibatalkan',
                     ]);
         @endphp
 
@@ -144,7 +144,7 @@
 
 @if (! isset($project))
 
-    {{-- Workflow --}}
+    {{-- Alur Kerja --}}
     <div
         x-data="{
             type: '{{ old('workflow_type', 'default') }}',
@@ -153,9 +153,9 @@
                     'stages',
                     [
                         'Perencanaan',
-                        'Development',
-                        'Testing',
-                        'Deployment'
+                        'Pengembangan',
+                        'Pengujian',
+                        'Penerapan'
                     ]
                 )
             )
@@ -166,11 +166,11 @@
 
         <div>
             <h3 class="font-semibold text-slate-900">
-                Workflow Project
+                Alur kerja proyek
             </h3>
 
             <p class="mt-1 text-sm text-slate-500">
-                Pilih workflow default atau buat tahapan sendiri.
+                Pilih Alur kerja bawaan atau buat tahapan sendiri.
             </p>
         </div>
 
@@ -192,12 +192,12 @@
 
                     <div>
                         <p class="font-semibold text-slate-800">
-                            Workflow Default
+                            Alur kerja bawaan
                         </p>
 
                         <p class="mt-1 text-xs leading-5 text-slate-500">
-                            Perencanaan → Development →
-                            Testing → Deployment
+                            Perencanaan → Pengembangan →
+                            Pengujian → Penerapan
                         </p>
                     </div>
                 </div>
@@ -219,11 +219,11 @@
 
                     <div>
                         <p class="font-semibold text-slate-800">
-                            Workflow Custom
+                            Alur kerja khusus
                         </p>
 
                         <p class="mt-1 text-xs leading-5 text-slate-500">
-                            Tentukan tahapan project secara manual.
+                            Tentukan tahapan Proyek secara manual.
                         </p>
                     </div>
                 </div>

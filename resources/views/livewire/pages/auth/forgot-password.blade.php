@@ -35,11 +35,11 @@ new #[Layout('layouts.guest')] class extends Component
         </p>
 
         <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-            Lupa password?
+            Lupa Kata sandi?
         </h2>
 
         <p class="mt-2 text-sm leading-6 text-slate-500">
-            Masukkan email akun Anda. Kami akan mengirimkan tautan untuk membuat password baru.
+            Masukkan alamat email akun Anda. Kami akan mengirimkan tautan untuk membuat kata sandi baru.
         </p>
     </div>
 
@@ -77,18 +77,18 @@ new #[Layout('layouts.guest')] class extends Component
             />
         </div>
 
-        {{-- Submit --}}
+        {{-- Kirim --}}
         <x-primary-button class="w-full">
-            Kirim Tautan Reset Password
+            Kirim tautan untuk mengatur ulang kata sandi
         </x-primary-button>
 
-        {{-- Back to Login --}}
+        {{-- Kembali ke masuk --}}
         <a
             href="{{ route('login') }}"
             wire:navigate
             class="block text-sm font-semibold text-center transition text-slate-600 hover:text-red-600"
         >
-            Kembali ke halaman login
+            Kembali ke halaman masuk
         </a>
 
     </form>

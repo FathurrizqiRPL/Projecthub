@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Atur Workflow')
-@section('header', 'Atur Workflow')
+@section('title', 'Atur Alur Kerja')
+@section('header', 'Atur Alur Kerja')
 
 @section('content')
 
@@ -31,7 +31,7 @@
             />
         </svg>
 
-        Kembali ke Project
+        Kembali ke Proyek
     </a>
 
 
@@ -42,11 +42,11 @@
 
         <div>
             <h2 class="text-xl font-bold text-slate-900">
-                Workflow {{ $project->name }}
+                Alur kerja {{ $project->name }}
             </h2>
 
             <p class="mt-1 text-sm text-slate-500">
-                Atur urutan tahapan project.
+                Atur urutan tahapan Proyek.
             </p>
         </div>
 
@@ -58,9 +58,9 @@
                        border-amber-200 bg-amber-50
                        px-4 py-3 text-sm text-amber-700"
             >
-                Project sedang aktif. Stage lama tidak dapat
+                Proyek sedang aktif. Tahap lama tidak dapat
                 dihapus, tetapi Anda masih dapat mengganti nama
-                atau menambahkan stage baru.
+                atau menambahkan tahap baru.
             </div>
 
         @endif
@@ -209,7 +209,7 @@
                            font-semibold text-white
                            transition hover:bg-red-700"
                 >
-                    Simpan Workflow
+                    Simpan Alur Kerja
                 </button>
 
             </div>

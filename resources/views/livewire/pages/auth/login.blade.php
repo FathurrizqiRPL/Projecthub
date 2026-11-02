@@ -47,7 +47,7 @@ new #[Layout('layouts.guest')] class extends Component
         </h2>
 
         <p class="mt-2 text-sm leading-6 text-slate-500">
-            Gunakan username dan password akun Anda untuk masuk.
+            Gunakan Nama pengguna dan Kata sandi akun Anda untuk masuk.
         </p>
     </div>
 
@@ -58,17 +58,17 @@ new #[Layout('layouts.guest')] class extends Component
         :status="session('status')"
     />
 
-    {{-- Login Form --}}
+    {{-- Masuk Form --}}
     <form
         wire:submit="login"
         x-on:submit="submitting = true"
         class="space-y-5"
     >
-        {{-- Username --}}
+        {{-- Nama pengguna --}}
         <div>
             <x-input-label
                 for="username"
-                value="Username"
+                value="Nama pengguna"
             />
 
             <x-text-input
@@ -80,7 +80,7 @@ new #[Layout('layouts.guest')] class extends Component
                 required
                 autofocus
                 autocomplete="username"
-                placeholder="Masukkan username Anda"
+                placeholder="Masukkan Nama pengguna Anda"
                 x-bind:disabled="submitting"
             />
 
@@ -90,11 +90,11 @@ new #[Layout('layouts.guest')] class extends Component
             />
         </div>
 
-        {{-- Password --}}
+        {{-- Kata sandi --}}
         <div>
             <x-input-label
                 for="password"
-                value="Password"
+                value="Kata sandi"
             />
 
             <x-text-input
@@ -105,7 +105,7 @@ new #[Layout('layouts.guest')] class extends Component
                 name="password"
                 required
                 autocomplete="current-password"
-                placeholder="Masukkan password"
+                placeholder="Masukkan Kata sandi"
                 x-bind:disabled="submitting"
             />
 
@@ -115,7 +115,7 @@ new #[Layout('layouts.guest')] class extends Component
             />
         </div>
 
-        {{-- Remember Me --}}
+        {{-- Ingat saya --}}
         <label
             for="remember"
             class="inline-flex cursor-pointer items-center gap-2.5"
@@ -140,7 +140,7 @@ new #[Layout('layouts.guest')] class extends Component
             </span>
         </label>
 
-        {{-- Submit --}}
+        {{-- Kirim --}}
         <button
             type="submit"
             x-bind:disabled="submitting"

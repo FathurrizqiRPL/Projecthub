@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Kelola Anggota')
-@section('header', 'Kelola Anggota')
+@section('title', 'Kelola anggota')
+@section('header', 'Kelola anggota')
 
 @section('content')
 <div class="max-w-3xl mx-auto space-y-6">
@@ -9,13 +9,13 @@
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
         </svg>
-        Kembali ke Project
+        Kembali ke Proyek
     </a>
 
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
         <div>
             <h2 class="text-xl font-bold text-slate-900">Anggota {{ $project->name }}</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-500">Pilih karyawan yang akan tergabung dan mengerjakan tugas dalam project ini.</p>
+            <p class="mt-2 text-sm leading-6 text-slate-500">Pilih karyawan yang akan tergabung dan mengerjakan tugas dalam proyek ini.</p>
         </div>
 
         <form method="POST" action="{{ route('project-manager.projects.members.update', $project) }}" class="mt-7">

@@ -1,27 +1,27 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Task')
-@section('header', 'Task')
+@section('title', 'Tugas')
+@section('header', 'Tugas')
 
 @section('content')
 <div class="space-y-6">
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
         <div>
-            <h2 class="text-xl font-bold text-slate-900">Daftar Task Project</h2>
+            <h2 class="text-xl font-bold text-slate-900">Daftar tugas proyek</h2>
             <p class="mt-1 text-sm text-slate-500">
-                Task dikelompokkan berdasarkan project yang Anda kelola.
+                Tugas dikelompokkan berdasarkan proyek yang Anda kelola.
             </p>
         </div>
 
         <form method="GET" action="{{ route('project-manager.tasks.index') }}" class="mt-5">
-            <label for="search" class="sr-only">Cari nama project</label>
+            <label for="search" class="sr-only">Cari nama proyek</label>
             <div class="flex flex-col gap-3 sm:flex-row">
                 <input
                     id="search"
                     type="search"
                     name="search"
                     value="{{ $search }}"
-                    placeholder="Cari nama project..."
+                    placeholder="Cari nama Proyek..."
                     class="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-red-600 focus:ring-red-600"
                 >
                 @if ($reviewOnly)
@@ -53,7 +53,7 @@
                     'border-slate-200 bg-white text-slate-600 hover:border-slate-300' => $reviewOnly,
                 ])
             >
-                Semua Task
+                Semua Tugas
             </a>
             <a
                 href="{{ route('project-manager.tasks.index', array_filter(['search' => $search, 'filter' => 'review'])) }}"
@@ -63,7 +63,7 @@
                     'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100' => ! $reviewOnly,
                 ])
             >
-                Perlu Review
+                Perlu review
                 <span @class([
                     'rounded-full px-2 py-0.5 text-xs',
                     'bg-white/20 text-white' => $reviewOnly,
@@ -78,15 +78,15 @@
     @if ($projects->isEmpty())
         <div class="rounded-2xl border border-dashed border-slate-200 bg-[#fffdfa] p-10 text-center">
             <p class="text-sm font-semibold text-slate-700">
-                {{ $reviewOnly ? 'Tidak ada task yang menunggu review' : 'Project tidak ditemukan' }}
+                {{ $reviewOnly ? 'Tidak ada tugas yang menunggu Peninjauan' : 'Proyek tidak ditemukan' }}
             </p>
             <p class="mt-1 text-xs text-slate-400">
                 @if ($search !== '')
-                    Coba kata kunci nama project yang berbeda.
+                    Coba kata kunci nama Proyek yang berbeda.
                 @elseif ($reviewOnly)
-                    Task yang diajukan employee akan tampil di sini untuk divalidasi.
+                    tugas yang diajukan Karyawan akan tampil di sini untuk divalidasi.
                 @else
-                    Project yang Anda kelola akan tampil di sini.
+                    Proyek yang Anda kelola akan tampil di sini.
                 @endif
             </p>
         </div>
@@ -112,7 +112,7 @@
                                 wire:navigate
                                 class="shrink-0 rounded-xl bg-slate-900 px-4 py-2.5 text-center text-xs font-semibold text-white transition hover:bg-slate-800"
                             >
-                                Lihat Task Project
+                                Lihat tugas proyek
                             </a>
                         </div>
                     </header>
@@ -120,7 +120,7 @@
                     <div class="space-y-3 p-4 sm:p-5">
                         @if ($project->tasks->isEmpty())
                             <div class="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center">
-                                <p class="text-sm font-semibold text-slate-700">Project belum ada tugas</p>
+                                <p class="text-sm font-semibold text-slate-700">Proyek belum memiliki tugas</p>
                             </div>
                         @endif
 
@@ -131,7 +131,7 @@
                                     : match ($task->status) {
                                     'pending' => 'Belum Dikerjakan',
                                     'in_progress' => 'Dikerjakan',
-                                    'waiting_review' => 'Perlu Review',
+                                    'waiting_review' => 'Perlu review',
                                     'revision' => 'Revisi',
                                     'completed' => 'Selesai',
                                     default => ucfirst(str_replace('_', ' ', $task->status)),
@@ -167,7 +167,7 @@
                                         <p class="mt-1 text-xs text-slate-500">
                                             Tahap: {{ $task->stage?->name ?? '-' }}
                                             <span class="mx-1 text-slate-300">·</span>
-                                            {{ $completedSubtasks }} dari {{ $totalSubtasks }} subtask selesai
+                                            {{ $completedSubtasks }} dari {{ $totalSubtasks }} subtugas selesai
                                         </p>
 
                                         <div class="mt-3 flex max-w-md items-center gap-1">

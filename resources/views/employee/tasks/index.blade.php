@@ -1,17 +1,17 @@
 @extends('layouts.employee')
 
-@section('title', 'Tugas Saya')
-@section('header', 'Tugas Saya')
+@section('title', 'Tugas saya')
+@section('header', 'Tugas saya')
 
 @section('content')
 <div class="space-y-6">
     <div>
         <h2 class="text-xl font-bold text-slate-900">
-            Tugas Saya
+            Tugas saya
         </h2>
 
         <p class="mt-1 text-sm text-slate-500">
-            Daftar task yang diberikan kepada Anda.
+            Daftar tugas yang diberikan kepada Anda.
         </p>
     </div>
 
@@ -28,7 +28,7 @@
             </p>
 
             <p class="mt-1 text-xs text-slate-400">
-                Task yang diberikan Project Manager akan tampil di sini.
+                tugas yang diberikan Manajer proyek akan tampil di sini.
             </p>
         </div>
     @else
@@ -48,11 +48,11 @@
                         : 0;
 
                     $statusLabel = $task->completionException
-                        ? 'Dikecualikan oleh PM'
+                        ? 'Dikecualikan oleh manajer proyek'
                         : match ($task->status) {
                         'pending' => 'Belum Dikerjakan',
                         'in_progress' => 'Dikerjakan',
-                        'waiting_review' => 'Menunggu Review',
+                        'waiting_review' => 'Menunggu peninjauan',
                         'revision' => 'Revisi',
                         'completed' => 'Selesai',
                         default => ucfirst(
@@ -100,7 +100,7 @@
                             <div class="max-w-xl mt-5">
                                 <div class="flex items-center justify-between gap-4 mb-2">
                                     <span class="text-xs font-semibold text-slate-500">
-                                        Progress
+                                        Progres
                                     </span>
 
                                     <span class="text-xs font-bold text-slate-700">
@@ -116,13 +116,13 @@
 
                                 <p class="mt-2 text-xs text-slate-400">
                                     {{ $completed }} dari
-                                    {{ $total }} subtask selesai
+                                    {{ $total }} Subtugas selesai
                                 </p>
                             </div>
 
                             <div class="flex flex-wrap mt-4 text-xs gap-x-5 gap-y-2 text-slate-400">
                                 <span>
-                                    Deadline:
+                                    Tenggat:
                                     <strong class="font-semibold text-slate-600">
                                         {{ $task->deadline?->locale('id')->translatedFormat('d F Y') ?? '-' }}
                                     </strong>
@@ -140,7 +140,7 @@
                         <a href="{{ route('employee.tasks.show', $task) }}"
                             wire:navigate
                             class="shrink-0 rounded-xl bg-slate-900 px-4 py-2.5 text-center text-xs font-semibold text-white transition hover:bg-slate-800">
-                            Detail Task
+                            Detail tugas
                         </a>
                     </div>
                 </div>

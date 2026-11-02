@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Task Project')
-@section('header', 'Task Project')
+@section('title', 'Tugas proyek')
+@section('header', 'Tugas proyek')
 
 @section('content')
 <div class="space-y-6">
@@ -11,19 +11,19 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
             </svg>
-            Kembali ke Project
+            Kembali ke Proyek
         </a>
 
         <div class="flex flex-wrap gap-2">
             <a href="{{ route('project-manager.tasks.index', ['filter' => 'review']) }}" wire:navigate
                 class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
-                Task Perlu Review
+                Tugas Perlu review
             </a>
 
             @if (!in_array($project->status, ['completed', 'cancelled']))
                 <a href="{{ route('project-manager.projects.tasks.create', ['project' => $project, 'stage' => $stage?->id]) }}" wire:navigate
                     class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">
-                    + Buat Task
+                    + Buat Tugas
                 </a>
             @endif
         </div>
@@ -38,7 +38,7 @@
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
         <h2 class="text-xl font-bold text-slate-900">{{ $project->name }}</h2>
         <p class="mt-1 text-sm text-slate-500">
-            Pilih tahapan untuk melihat task pada setiap fase project.
+            Pilih tahapan untuk melihat Tugas pada setiap fase Proyek.
         </p>
 
         @if ($project->stages->isNotEmpty())
@@ -91,21 +91,21 @@
                         Selesai {{ $stage->completed_at->locale('id')->translatedFormat('d F Y') }}
                     </p>
                 @elseif ($project->current_stage_id === $stage->id)
-                    <p class="mt-1 text-xs text-red-600">Fase project saat ini</p>
+                    <p class="mt-1 text-xs text-red-600">Fase proyek saat ini</p>
                 @endif
             </div>
 
             <span class="text-sm text-slate-400">
-                {{ $tasks->count() }} task
+                {{ $tasks->count() }} Tugas
             </span>
         </div>
     @endif
 
     @if (!$stage)
         <div class="rounded-2xl border border-dashed border-slate-200 bg-[#fffdfa] p-10 text-center">
-            <p class="text-sm font-semibold text-slate-700">Belum ada tahapan project</p>
+            <p class="text-sm font-semibold text-slate-700">Belum ada tahapan proyek</p>
             <p class="mt-1 text-xs text-slate-400">
-                Atur workflow project terlebih dahulu sebelum membuat task.
+                Atur Alur kerja proyek terlebih dahulu sebelum membuat Tugas.
             </p>
         </div>
     @elseif ($tasks->isEmpty())
@@ -116,7 +116,7 @@
                 </svg>
             </div>
 
-            <p class="mt-4 text-sm font-semibold text-slate-700">Belum ada task</p>
+            <p class="mt-4 text-sm font-semibold text-slate-700">Belum ada tugas</p>
             <p class="mt-1 text-xs text-slate-400">
                 Belum ada pekerjaan pada tahap {{ $stage->name }}.
             </p>
@@ -130,7 +130,7 @@
                         : match ($task->status) {
                         'pending' => 'Belum Dikerjakan',
                         'in_progress' => 'Dikerjakan',
-                        'waiting_review' => 'Menunggu Review',
+                        'waiting_review' => 'Menunggu peninjauan',
                         'revision' => 'Revisi',
                         'completed' => 'Selesai',
                         default => ucfirst(str_replace('_', ' ', $task->status)),
@@ -195,7 +195,7 @@
                             <div class="max-w-xl mt-5">
                                 <div class="flex items-center justify-between gap-4 mb-2">
                                     <span class="text-xs font-semibold text-slate-500">
-                                        Progress
+                                        Progres
                                     </span>
 
                                     <span class="text-xs font-bold text-slate-700">
@@ -209,7 +209,7 @@
                                 </div>
 
                                 <p class="mt-2 text-xs text-slate-400">
-                                    {{ $completedSubtasks }} dari {{ $totalSubtasks }} subtask selesai
+                                    {{ $completedSubtasks }} dari {{ $totalSubtasks }} subtugas selesai
                                 </p>
                             </div>
 
@@ -222,7 +222,7 @@
                                 </span>
 
                                 <span>
-                                    Deadline:
+                                    Tenggat:
                                     <strong class="font-semibold text-slate-600">
                                         {{ $task->deadline?->locale('id')->translatedFormat('d F Y') ?? '-' }}
                                     </strong>
@@ -233,16 +233,16 @@
                         <div class="flex flex-wrap gap-2 shrink-0">
                             <a href="{{ route('project-manager.projects.tasks.show', [$project, $task]) }}" wire:navigate
                                 class="rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-slate-800">
-                                Detail Task
+                                Detail tugas
                             </a>
 
                             @if ($task->status === 'pending'
                                 && ! in_array($project->status, ['completed', 'cancelled'], true))
                                 <form method="POST"
                                     action="{{ route('project-manager.projects.tasks.destroy', [$project, $task]) }}"
-                                    onsubmit="return confirm('Yakin ingin menghapus task ini?')">
+                                    onsubmit="return confirm('Yakin ingin menghapus tugas ini?')">
                                     @csrf
-                                    @method('DELETE')
+                                    @method('Hapus')
 
                                     <button type="submit"
                                         class="rounded-xl border border-red-200 px-4 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-50">

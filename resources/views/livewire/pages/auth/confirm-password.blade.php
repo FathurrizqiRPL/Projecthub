@@ -16,7 +16,7 @@ new #[Layout('layouts.guest')] class extends Component
             'password' => $this->password,
         ])) {
             throw ValidationException::withMessages([
-                'password' => __('auth.password'),
+                'password' => 'Kata sandi yang dimasukkan tidak cocok.',
             ]);
         }
 
@@ -37,22 +37,22 @@ new #[Layout('layouts.guest')] class extends Component
         </p>
 
         <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-            Konfirmasi password
+            Konfirmasi kata sandi
         </h2>
 
         <p class="mt-2 text-sm leading-6 text-slate-500">
             Untuk melanjutkan ke tindakan yang memerlukan keamanan tambahan,
-            silakan masukkan password akun Anda.
+            silakan masukkan Kata sandi akun Anda.
         </p>
     </div>
 
-    {{-- Confirm Password Form --}}
+    {{-- Formulir konfirmasi kata sandi --}}
     <form wire:submit="confirmPassword" class="space-y-5">
 
         <div>
             <x-input-label
                 for="password"
-                :value="__('Password')"
+                :value="__('Kata sandi')"
             />
 
             <x-text-input
@@ -64,7 +64,7 @@ new #[Layout('layouts.guest')] class extends Component
                 required
                 autofocus
                 autocomplete="current-password"
-                placeholder="Masukkan password Anda"
+                placeholder="Masukkan Kata sandi Anda"
             />
 
             <x-input-error
@@ -74,7 +74,7 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
 
         <x-primary-button class="w-full">
-            Konfirmasi Password
+            Konfirmasi kata sandi
         </x-primary-button>
 
     </form>

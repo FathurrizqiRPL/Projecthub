@@ -33,9 +33,9 @@
             $credentialText =
                 "Akun ProjectHub\n\n".
                 "Nama: {$credentials['name']}\n".
-                "Username: {$credentials['username']}\n".
-                "Password sementara: {$credentials['password']}\n\n".
-                "Silakan login dan ganti password setelah masuk.";
+                "Nama pengguna: {$credentials['username']}\n".
+                "Kata sandi sementara: {$credentials['password']}\n\n".
+                "Silakan Masuk dan ganti Kata sandi setelah masuk.";
         @endphp
 
         <div
@@ -86,7 +86,7 @@
                             class="text-xs font-semibold uppercase
                                    tracking-wider text-slate-400"
                         >
-                            Username
+                            Nama pengguna
                         </p>
 
                         <p
@@ -103,7 +103,7 @@
                             class="text-xs font-semibold uppercase
                                    tracking-wider text-slate-400"
                         >
-                            Password Sementara
+                            Kata sandi Sementara
                         </p>
 
                         <p
@@ -122,9 +122,9 @@
                            sm:justify-between"
                 >
                     <p class="text-xs leading-5 text-blue-700">
-                        Password sementara ini hanya ditampilkan
+                        Kata sandi sementara ini hanya ditampilkan
                         pada proses ini dan wajib diganti oleh
-                        pengguna setelah login.
+                        pengguna setelah Masuk.
                     </p>
 
                     <button
@@ -161,7 +161,7 @@
             class="text-sm font-medium text-slate-500
                    transition hover:text-red-600"
         >
-            ← Kembali ke User Management
+            ← Kembali ke Kelola Pengguna
         </a>
 
         <a
@@ -171,7 +171,7 @@
                    text-sm font-semibold text-white
                    transition hover:bg-red-700"
         >
-            Edit Pengguna
+            Ubah Pengguna
         </a>
     </div>
 
@@ -222,7 +222,7 @@
                                     ? 'Administrator'
                                     : (
                                         $user->role === 'project_manager'
-                                            ? 'Project Manager'
+                                            ? 'Manajer proyek'
                                             : 'Karyawan'
                                     )
                             }}
@@ -258,7 +258,7 @@
                     class="text-xs font-semibold uppercase
                            tracking-wider text-slate-400"
                 >
-                    Username
+                    Nama pengguna
                 </p>
 
                 <p
@@ -373,8 +373,8 @@
                         </p>
 
                         <p class="mt-1 max-w-xl text-sm text-slate-500">
-                            Buat password sementara baru jika
-                            pengguna lupa password atau kredensial
+                            Buat Kata sandi sementara baru jika
+                            pengguna lupa Kata sandi atau kredensial
                             awal belum sempat diberikan.
                         </p>
                     </div>
@@ -388,7 +388,7 @@
                             )
                         }}"
                         onsubmit="return confirm(
-                            'Buat password sementara baru untuk pengguna ini? Password sebelumnya tidak akan dapat digunakan lagi.'
+                            'Buat kata sandi sementara baru untuk pengguna ini? Kata sandi sebelumnya tidak akan dapat digunakan lagi.'
                         )"
                     >
                         @csrf
@@ -403,7 +403,7 @@
                                    text-amber-700 transition
                                    hover:bg-amber-100"
                         >
-                            Reset Password
+                            Atur ulang kata sandi
                         </button>
                     </form>
                 </div>

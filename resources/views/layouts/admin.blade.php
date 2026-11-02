@@ -14,7 +14,7 @@
     >
 
     <title>
-        @yield('title', 'Admin') | {{ config('app.name', 'ProjectHub') }}
+        @yield('title', 'Administrator') | {{ config('app.name', 'ProjectHub') }}
     </title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -55,11 +55,11 @@
 
                     <div>
                         <div class="text-lg font-bold tracking-tight text-slate-900">
-                            PROJECT<span class="text-red-600">HUB</span>
+                            Project<span class="text-red-600">HUB</span>
                         </div>
 
                         <div class="text-xs text-slate-400">
-                            Project Management
+                            Manajemen Proyek
                         </div>
                     </div>
                 </a>
@@ -70,7 +70,7 @@
             {{-- Navigation --}}
             <nav class="flex-1 px-4 py-6 space-y-2">
 
-                {{-- Dashboard --}}
+                {{-- Dasbor --}}
                 <a
                     href="{{ route('admin.dashboard') }}"
                     wire:navigate
@@ -95,7 +95,7 @@
                         />
                     </svg>
 
-                    Dashboard
+                    Dasbor
                 </a>
 
 
@@ -123,7 +123,7 @@
                         />
                     </svg>
 
-                    User Management
+                    Kelola Pengguna
                 </a>
 
             </nav>
@@ -160,7 +160,7 @@
                     wire:navigate
                     class="block px-3 py-2 mb-1 text-sm transition rounded-lg text-slate-600 hover:bg-slate-100"
                 >
-                    Profile
+                    Profil
                 </a>
 
 

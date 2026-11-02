@@ -12,7 +12,7 @@
             class="text-sm font-medium text-slate-500
                    transition hover:text-red-600"
         >
-            ← Kembali ke User Management
+            ← Kembali ke Kelola Pengguna
         </a>
     </div>
 
@@ -26,8 +26,8 @@
             </h2>
 
             <p class="mt-1 text-sm text-slate-500">
-                Buat akun untuk Project Manager atau Karyawan.
-                Password sementara akan dibuat otomatis oleh sistem.
+                Buat akun untuk Manajer proyek atau Karyawan.
+                Kata sandi sementara akan dibuat otomatis oleh sistem.
             </p>
         </div>
 
@@ -66,7 +66,7 @@
                 <div>
                     <x-input-label
                         for="username"
-                        value="Username"
+                        value="Nama pengguna"
                     />
 
                     <x-text-input
@@ -86,14 +86,14 @@
                     />
 
                     <p class="mt-2 text-xs text-slate-400">
-                        Username digunakan untuk login.
+                        Nama pengguna digunakan untuk Masuk.
                     </p>
                 </div>
 
                 <div>
                     <x-input-label
                         for="email"
-                        value="Email (Opsional)"
+                        value="Alamat email (opsional)"
                     />
 
                     <x-text-input
@@ -137,7 +137,7 @@
                                 old('role') === 'project_manager'
                             )
                         >
-                            Project Manager
+                            Manajer proyek
                         </option>
 
                         <option
@@ -246,11 +246,11 @@
                        bg-blue-50 px-4 py-3"
             >
                 <p class="text-sm font-semibold text-blue-700">
-                    Password dibuat otomatis
+                    Kata sandi dibuat otomatis
                 </p>
 
                 <p class="mt-1 text-sm text-blue-600">
-                    Setelah akun dibuat, username dan password
+                    Setelah akun dibuat, Nama pengguna dan Kata sandi
                     sementara akan ditampilkan agar dapat
                     diberikan kepada pengguna.
                 </p>

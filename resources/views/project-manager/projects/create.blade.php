@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Buat Project')
-@section('header', 'Buat Project')
+@section('title', 'Buat Proyek')
+@section('header', 'Buat Proyek')
 
 @section('content')
 
@@ -10,11 +10,11 @@
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
 
         <h2 class="text-xl font-bold text-slate-900">
-            Project Baru
+            Proyek Baru
         </h2>
 
         <p class="mt-1 text-sm text-slate-500">
-            Isi informasi dasar project.
+            Isi informasi dasar Proyek.
         </p>
 
         <form
@@ -40,7 +40,7 @@
                     type="submit"
                     class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
                 >
-                    Simpan Project
+                    Simpan Proyek
                 </button>
 
             </div>

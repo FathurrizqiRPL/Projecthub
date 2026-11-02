@@ -63,15 +63,15 @@ new #[Layout('layouts.guest')] class extends Component
     {{-- Heading --}}
     <div class="mb-7">
         <p class="text-sm font-semibold text-red-600">
-            Buat password baru
+            Buat kata sandi baru
         </p>
 
         <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-            Reset password
+            Atur ulang kata sandi
         </h2>
 
         <p class="mt-2 text-sm leading-6 text-slate-500">
-            Masukkan email akun Anda dan buat password baru untuk melanjutkan.
+            Masukkan alamat email akun Anda dan buat kata sandi baru untuk melanjutkan.
         </p>
     </div>
 
@@ -102,11 +102,11 @@ new #[Layout('layouts.guest')] class extends Component
             />
         </div>
 
-        {{-- New Password --}}
+        {{-- Kata sandi baru --}}
         <div>
             <x-input-label
                 for="password"
-                :value="__('Password Baru')"
+                :value="__('Kata sandi baru')"
             />
 
             <x-text-input
@@ -117,7 +117,7 @@ new #[Layout('layouts.guest')] class extends Component
                 name="password"
                 required
                 autocomplete="new-password"
-                placeholder="Masukkan password baru"
+                placeholder="Masukkan kata sandi baru"
             />
 
             <x-input-error
@@ -126,11 +126,11 @@ new #[Layout('layouts.guest')] class extends Component
             />
         </div>
 
-        {{-- Confirm Password --}}
+        {{-- Konfirmasi kata sandi --}}
         <div>
             <x-input-label
                 for="password_confirmation"
-                :value="__('Konfirmasi Password Baru')"
+                :value="__('Konfirmasi kata sandi Baru')"
             />
 
             <x-text-input
@@ -141,7 +141,7 @@ new #[Layout('layouts.guest')] class extends Component
                 name="password_confirmation"
                 required
                 autocomplete="new-password"
-                placeholder="Ulangi password baru"
+                placeholder="Ulangi kata sandi baru"
             />
 
             <x-input-error
@@ -150,18 +150,18 @@ new #[Layout('layouts.guest')] class extends Component
             />
         </div>
 
-        {{-- Submit --}}
+        {{-- Kirim --}}
         <x-primary-button class="w-full">
-            Reset Password
+            Atur ulang kata sandi
         </x-primary-button>
 
-        {{-- Back to Login --}}
+        {{-- Kembali ke masuk --}}
         <a
             href="{{ route('login') }}"
             wire:navigate
             class="block text-sm font-semibold text-center transition text-slate-600 hover:text-red-600"
         >
-            Kembali ke halaman login
+            Kembali ke halaman masuk
         </a>
 
     </form>

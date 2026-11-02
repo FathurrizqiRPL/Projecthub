@@ -1,13 +1,13 @@
 <div>
     <div class="mb-6 grid gap-3 lg:grid-cols-[1fr_200px_180px]">
         <div>
-            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama, username, atau email..." class="block w-full rounded-xl border-slate-300 bg-[#fffdfa] text-sm shadow-sm focus:border-red-500 focus:ring-red-500">
+            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama, Nama pengguna, atau email..." class="block w-full rounded-xl border-slate-300 bg-[#fffdfa] text-sm shadow-sm focus:border-red-500 focus:ring-red-500">
         </div>
 
         <select wire:model.live="role" class="rounded-xl border-slate-300 bg-[#fffdfa] text-sm shadow-sm focus:border-red-500 focus:ring-red-500">
             <option value="">Semua Role</option>
             <option value="admin">Administrator</option>
-            <option value="project_manager">Project Manager</option>
+            <option value="project_manager">Manajer proyek</option>
             <option value="employee">Karyawan</option>
         </select>
 
@@ -24,7 +24,7 @@
                 <thead class="bg-slate-50/70">
                     <tr>
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Pengguna</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Username</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Nama pengguna</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Role</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Status</th>
                         <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">Aksi</th>
@@ -42,7 +42,7 @@
 
                                     <div class="min-w-0">
                                         <p class="truncate text-sm font-semibold text-slate-800">{{ $user->name }}</p>
-                                        <p class="truncate text-xs text-slate-400">{{ $user->email ?: 'Email belum diisi' }}</p>
+                                        <p class="truncate text-xs text-slate-400">{{ $user->email ?: 'email belum diisi' }}</p>
                                     </div>
                                 </div>
                             </td>
@@ -53,7 +53,7 @@
 
                             <td class="px-6 py-4">
                                 <span class="text-sm text-slate-600">
-                                    {{ $user->role === 'admin' ? 'Administrator' : ($user->role === 'project_manager' ? 'Project Manager' : 'Karyawan') }}
+                                    {{ $user->role === 'admin' ? 'Administrator' : ($user->role === 'project_manager' ? 'Manajer proyek' : 'Karyawan') }}
                                 </span>
                             </td>
 
@@ -73,7 +73,7 @@
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
                                 <p class="text-sm font-medium text-slate-500">Pengguna tidak ditemukan.</p>
-                                <p class="mt-1 text-xs text-slate-400">Coba ubah kata pencarian atau filter.</p>
+                                <p class="mt-1 text-xs text-slate-400">Coba ubah kata pencarian atau Saring.</p>
                             </td>
                         </tr>
                     @endforelse

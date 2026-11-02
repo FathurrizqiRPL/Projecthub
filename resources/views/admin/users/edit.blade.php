@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Pengguna')
-@section('header', 'Edit Pengguna')
+@section('title', 'Ubah Pengguna')
+@section('header', 'Ubah Pengguna')
 
 @section('content')
 <div class="mx-auto max-w-4xl">
@@ -13,7 +13,7 @@
 
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
         <div class="mb-7">
-            <h2 class="text-lg font-bold text-slate-900">Edit Data Pengguna</h2>
+            <h2 class="text-lg font-bold text-slate-900">Ubah Data Pengguna</h2>
             <p class="mt-1 text-sm text-slate-500">Perbarui informasi akun {{ $user->name }}.</p>
         </div>
 
@@ -29,14 +29,14 @@
                 </div>
 
                 <div>
-                    <x-input-label for="username" value="Username" />
+                    <x-input-label for="username" value="Nama pengguna" />
                     <x-text-input id="username" name="username" type="text" class="mt-2 block w-full" :value="old('username', $user->username)" required />
                     <x-input-error :messages="$errors->get('username')" class="mt-2" />
-                    <p class="mt-2 text-xs text-slate-400">Username digunakan untuk login.</p>
+                    <p class="mt-2 text-xs text-slate-400">Nama pengguna digunakan untuk masuk.</p>
                 </div>
 
                 <div>
-                    <x-input-label for="email" value="Email (Opsional)" />
+                    <x-input-label for="email" value="Alamat email (opsional)" />
                     <x-text-input id="email" name="email" type="email" class="mt-2 block w-full" :value="old('email', $user->email)" placeholder="Belum diisi" />
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
@@ -52,7 +52,7 @@
                         </div>
                     @else
                         <select id="role" name="role" required class="mt-2 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-red-500 focus:ring-red-500">
-                            <option value="project_manager" @selected(old('role', $user->role) === 'project_manager')>Project Manager</option>
+                            <option value="project_manager" @selected(old('role', $user->role) === 'project_manager')>Manajer proyek</option>
                             <option value="employee" @selected(old('role', $user->role) === 'employee')>Karyawan</option>
                         </select>
                     @endif

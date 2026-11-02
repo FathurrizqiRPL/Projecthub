@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Dashboard Project Manager')
-@section('header', 'Dashboard')
+@section('title', 'Dasbor Manajer proyek')
+@section('header', 'Dasbor')
 
 @section('content')
 
@@ -29,7 +29,7 @@
     {{-- Statistics --}}
     <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
 
-        {{-- Total Projects --}}
+        {{-- Total Proyek --}}
         <div
             class="rounded-2xl border border-slate-200
                    bg-[#fffdfa] p-5 shadow-sm"
@@ -48,7 +48,7 @@
         </div>
 
 
-        {{-- Active Projects --}}
+        {{-- Aktif Proyek --}}
         <div
             class="rounded-2xl border border-slate-200
                    bg-[#fffdfa] p-5 shadow-sm"
@@ -67,13 +67,13 @@
         </div>
 
 
-        {{-- Ongoing Tasks --}}
+        {{-- Ongoing Tugas --}}
         <div
             class="rounded-2xl border border-slate-200
                    bg-[#fffdfa] p-5 shadow-sm"
         >
             <p class="text-sm font-medium text-slate-500">
-                Tugas Berjalan
+                Tugas berjalan
             </p>
 
             <p class="mt-3 text-3xl font-bold text-slate-300">
@@ -86,13 +86,13 @@
         </div>
 
 
-        {{-- Completed Tasks --}}
+        {{-- Selesai Tugas --}}
         <div
             class="rounded-2xl border border-slate-200
                    bg-[#fffdfa] p-5 shadow-sm"
         >
             <p class="text-sm font-medium text-slate-500">
-                Tugas Selesai
+                Tugas selesai
             </p>
 
             <p class="mt-3 text-3xl font-bold text-slate-300">
@@ -110,7 +110,7 @@
     {{-- Bottom --}}
     <div class="mt-8 grid gap-5 lg:grid-cols-3">
 
-        {{-- Recent Projects --}}
+        {{-- Recent Proyek --}}
         <div
             class="rounded-2xl border border-slate-200
                    bg-[#fffdfa] p-6 shadow-sm
@@ -120,11 +120,11 @@
 
                 <div>
                     <h3 class="font-semibold text-slate-900">
-                        Proyek Terbaru
+                        Proyek terbaru
                     </h3>
 
                     <p class="mt-1 text-sm text-slate-500">
-                        Project yang terakhir Anda buat.
+                        Proyek yang terakhir Anda buat.
                     </p>
                 </div>
 
@@ -176,13 +176,13 @@
                     </p>
 
                     <p class="mt-1 max-w-sm text-xs leading-5 text-slate-400">
-                        Project yang Anda buat akan muncul di sini.
+                        Proyek yang Anda buat akan muncul di sini.
                     </p>
                 </div>
 
             @else
 
-                {{-- Projects --}}
+                {{-- Proyek --}}
                 <div class="mt-6 space-y-3">
 
                     @foreach ($recentProjects as $project)
@@ -229,7 +229,7 @@
                                         ])
                                     >
                                         {{ match ($project->status) {
-                                            'draft' => 'Draft',
+                                            'draft' => 'Draf',
                                             'active' => 'Aktif',
                                             'completed' => 'Selesai',
                                             'cancelled' => 'Dibatalkan',
@@ -240,7 +240,7 @@
                                 </div>
 
                                 <p class="mt-1 text-xs text-slate-400">
-                                    Deadline:
+                                    Tenggat:
                                     {{ $project->deadline?->format('d M Y') ?? '-' }}
                                 </p>
 

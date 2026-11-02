@@ -28,10 +28,10 @@
 
                         <div>
                             <div class="text-xl font-bold tracking-tight text-slate-900">
-                                PROJECT<span class="text-red-600">HUB</span>
+                                Project<span class="text-red-600">HUB</span>
                             </div>
                             <div class="text-xs text-slate-500">
-                                Project Management System
+                                Sistem Manajemen Proyek
                             </div>
                         </div>
                     </a>
@@ -39,7 +39,7 @@
 
                 <div class="relative z-10 max-w-lg">
                     <p class="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-red-600">
-                        Work smarter
+                        Kerja lebih cerdas
                     </p>
 
                     <h1 class="text-4xl font-bold leading-tight text-slate-900 xl:text-5xl">
@@ -48,12 +48,12 @@
 
                     <p class="max-w-md mt-6 text-base leading-7 text-slate-600">
                         Pantau perkembangan proyek, pembagian tugas, verifikasi pekerjaan,
-                        hingga maintenance dalam satu sistem.
+                        hingga pemeliharaan dalam satu sistem.
                     </p>
                 </div>
 
                 <div class="relative z-10 text-sm text-slate-400">
-                    ProjectHub • Internal Project Management
+                    ProjectHub • Manajemen Proyek Internal
                 </div>
             </div>
 
@@ -68,10 +68,10 @@
 
                             <div>
                                 <div class="text-xl font-bold text-slate-900">
-                                    PROJECT<span class="text-red-600">HUB</span>
+                                    Project<span class="text-red-600">HUB</span>
                                 </div>
                                 <div class="text-xs text-slate-500">
-                                    Project Management System
+                                    Sistem Manajemen Proyek
                                 </div>
                             </div>
                         </a>

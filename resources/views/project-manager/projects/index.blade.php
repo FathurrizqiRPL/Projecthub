@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Projects')
-@section('header', 'Projects')
+@section('title', 'Proyek')
+@section('header', 'Proyek')
 
 @section('content')
 
@@ -12,11 +12,11 @@
 
         <div>
             <h2 class="text-xl font-bold text-slate-900">
-                Daftar Project
+                Daftar proyek
             </h2>
 
             <p class="mt-1 text-sm text-slate-500">
-                Kelola seluruh project yang Anda buat.
+                Kelola seluruh Proyek yang Anda buat.
             </p>
         </div>
 
@@ -27,7 +27,7 @@
                    bg-red-600 px-4 py-2.5 text-sm font-semibold text-white
                    transition hover:bg-red-700"
         >
-            + Buat Project
+            + Buat Proyek
         </a>
 
     </div>
@@ -43,7 +43,7 @@
         </div>
     @endif
 
-    {{-- Project List --}}
+    {{-- Proyek List --}}
     <div
         class="rounded-2xl border border-slate-200
                bg-[#fffdfa] shadow-sm"
@@ -58,7 +58,7 @@
                        sm:justify-between"
             >
 
-                {{-- Project Information --}}
+                {{-- Proyek Information --}}
                 <div class="min-w-0">
 
                     <div class="flex flex-wrap items-center gap-3">
@@ -112,7 +112,7 @@
                             ></span>
 
                             {{ match ($project->status) {
-                                'draft' => 'Draft',
+                                'draft' => 'Draf',
                                 'active' => 'Aktif',
                                 'completed' => 'Selesai',
                                 'cancelled' => 'Dibatalkan',
@@ -122,7 +122,7 @@
 
                     </div>
 
-                    {{-- Description --}}
+                    {{-- Deskripsi --}}
                     <p class="mt-2 text-sm text-slate-500">
                         {{ Str::limit(
                             $project->description ?: 'Tidak ada deskripsi.',
@@ -142,7 +142,7 @@
                         </span>
 
                         <span>
-                            Deadline:
+                            Tenggat:
                             {{ $project->deadline?->format('d M Y') ?? '-' }}
                         </span>
 
@@ -178,7 +178,7 @@
                                text-slate-600 transition
                                hover:bg-slate-50"
                     >
-                        Edit
+                        Ubah
                     </a>
 
                 </div>
@@ -191,11 +191,11 @@
             <div class="p-10 text-center">
 
                 <p class="font-semibold text-slate-700">
-                    Belum ada project
+                    Belum ada Proyek
                 </p>
 
                 <p class="mt-1 text-sm text-slate-400">
-                    Buat project pertama Anda untuk memulai.
+                    Buat proyek pertama Anda untuk memulai.
                 </p>
 
             </div>

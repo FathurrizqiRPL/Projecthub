@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'User Management')
+@section('title', 'Kelola Pengguna')
 
-@section('header', 'User Management')
+@section('header', 'Kelola Pengguna')
 
 @section('content')
 
@@ -26,11 +26,11 @@
             </p>
 
             <h2 class="mt-1 text-2xl font-bold text-slate-900">
-                User Management
+                Kelola Pengguna
             </h2>
 
             <p class="mt-2 text-sm text-slate-500">
-                Kelola akun Project Manager dan karyawan yang menggunakan ProjectHub.
+                Kelola akun Manajer proyek dan karyawan yang menggunakan ProjectHub.
             </p>
         </div>
 

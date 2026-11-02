@@ -40,23 +40,23 @@ new #[Layout('layouts.guest')] class extends Component
         </p>
 
         <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-            Ganti password sementara
+            Ganti kata sandi sementara
         </h2>
 
         <p class="mt-2 text-sm leading-6 text-slate-500">
-            Anda masih menggunakan password sementara.
-            Buat password baru sebelum melanjutkan ke ProjectHub.
+            Anda masih menggunakan kata sandi sementara.
+            Buat kata sandi baru sebelum melanjutkan ke ProjectHub.
         </p>
     </div>
 
-    {{-- Change Password Form --}}
+    {{-- Formulir ganti kata sandi --}}
     <form wire:submit="changePassword" class="space-y-5">
 
-        {{-- New Password --}}
+        {{-- Kata sandi baru --}}
         <div>
             <x-input-label
                 for="password"
-                :value="__('Password Baru')"
+                :value="__('Kata sandi baru')"
             />
 
             <x-text-input
@@ -68,7 +68,7 @@ new #[Layout('layouts.guest')] class extends Component
                 required
                 autofocus
                 autocomplete="new-password"
-                placeholder="Masukkan password baru"
+                placeholder="Masukkan kata sandi baru"
             />
 
             <x-input-error
@@ -77,11 +77,11 @@ new #[Layout('layouts.guest')] class extends Component
             />
         </div>
 
-        {{-- Confirm Password --}}
+        {{-- Konfirmasi kata sandi --}}
         <div>
             <x-input-label
                 for="password_confirmation"
-                :value="__('Konfirmasi Password Baru')"
+                :value="__('Konfirmasi kata sandi Baru')"
             />
 
             <x-text-input
@@ -92,7 +92,7 @@ new #[Layout('layouts.guest')] class extends Component
                 name="password_confirmation"
                 required
                 autocomplete="new-password"
-                placeholder="Ulangi password baru"
+                placeholder="Ulangi kata sandi baru"
             />
 
             <x-input-error
@@ -101,9 +101,9 @@ new #[Layout('layouts.guest')] class extends Component
             />
         </div>
 
-        {{-- Submit --}}
+        {{-- Kirim --}}
         <x-primary-button class="w-full">
-            Simpan Password Baru
+            Simpan kata sandi baru
         </x-primary-button>
 
     </form>

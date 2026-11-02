@@ -14,7 +14,7 @@
     >
 
     <title>
-        @yield('title', 'Project Manager') |
+        @yield('title', 'Manajer proyek') |
         {{ config('app.name', 'ProjectHub') }}
     </title>
 
@@ -56,11 +56,11 @@
 
                     <div>
                         <div class="text-lg font-bold tracking-tight text-slate-900">
-                            PROJECT<span class="text-red-600">HUB</span>
+                            Project<span class="text-red-600">HUB</span>
                         </div>
 
                         <div class="text-xs text-slate-400">
-                            Project Management
+                            Manajemen Proyek
                         </div>
                     </div>
                 </a>
@@ -71,7 +71,7 @@
             {{-- Navigation --}}
             <nav class="flex-1 space-y-2 px-4 py-6">
 
-                {{-- Dashboard --}}
+                {{-- Dasbor --}}
                 <a
                     href="{{ route('project-manager.dashboard') }}"
                     wire:navigate
@@ -96,11 +96,11 @@
                         />
                     </svg>
 
-                    Dashboard
+                    Dasbor
                 </a>
 
 
-                {{-- Projects --}}
+                {{-- Proyek --}}
                 <a
                     href="{{ route('project-manager.projects.index') }}"
                     wire:navigate
@@ -124,7 +124,7 @@
                         />
                     </svg>
 
-                    Projects
+                    Proyek
                 </a>
 
 
@@ -151,7 +151,7 @@
                         />
                     </svg>
 
-                    Tasks
+                    Tugas
                 </a>
 
             </nav>
@@ -177,7 +177,7 @@
                         </p>
 
                         <p class="text-xs text-slate-400">
-                            Project Manager
+                            Manajer proyek
                         </p>
 
                     </div>
@@ -192,7 +192,7 @@
                            text-sm text-slate-600 transition
                            hover:bg-slate-100"
                 >
-                    Profile
+                    Profil
                 </a>
 
 
@@ -238,7 +238,7 @@
                             class="text-xs font-semibold uppercase
                                    tracking-wider text-red-600"
                         >
-                            Project Manager
+                            Manajer proyek
                         </p>
 
                         <h1 class="text-xl font-bold text-slate-900">
