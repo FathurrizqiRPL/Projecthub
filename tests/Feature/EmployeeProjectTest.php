@@ -97,6 +97,58 @@ it('lists only projects where the employee has an assigned task', function () {
         ->assertSee(route('employee.projects.show', $project), false);
 });
 
+it('searches assigned projects by name or description without exposing other projects', function () {
+    [
+        'employee' => $employee,
+        'project' => $assignedProject,
+        'manager' => $manager,
+    ] = createEmployeeProjectContext();
+    $assignedByDescription = Project::create([
+        'created_by' => $manager->id,
+        'name' => 'Another assigned project',
+        'description' => 'Contains the unique keyword',
+        'status' => 'active',
+    ]);
+    $stage = ProjectStage::create([
+        'project_id' => $assignedByDescription->id,
+        'name' => 'Planning',
+        'position' => 1,
+    ]);
+    $task = $assignedByDescription->tasks()->create([
+        'project_stage_id' => $stage->id,
+        'created_by' => $manager->id,
+        'title' => 'Assigned work',
+        'status' => 'pending',
+    ]);
+    $task->assignees()->attach($employee->id);
+
+    $unassignedProject = Project::create([
+        'created_by' => $manager->id,
+        'name' => 'Unique keyword unassigned project',
+        'description' => 'This project is not assigned to the employee',
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($employee)
+        ->get(route('employee.projects.index', ['search' => 'unique keyword']))
+        ->assertOk()
+        ->assertSee($assignedByDescription->name)
+        ->assertDontSee($assignedProject->name)
+        ->assertDontSee($unassignedProject->name)
+        ->assertSee('value="unique keyword"', false);
+
+    $this->actingAs($employee)
+        ->get(route('employee.projects.index', ['search' => 'Employee visible']))
+        ->assertOk()
+        ->assertSee($assignedProject->name)
+        ->assertDontSee($assignedByDescription->name);
+
+    $this->actingAs($employee)
+        ->get(route('employee.projects.index', ['search' => 'no matching project']))
+        ->assertOk()
+        ->assertSee('Proyek tidak ditemukan');
+});
+
 it('shows project stages and groups assigned and teammate tasks separately', function () {
     [
         'employee' => $employee,

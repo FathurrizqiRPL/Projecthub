@@ -13,10 +13,41 @@
         </p>
     </div>
 
+    <form method="GET" action="{{ route('employee.projects.index') }}" class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-4 shadow-sm">
+        <label for="project-search" class="sr-only">Cari proyek</label>
+        <div class="flex flex-col gap-3 sm:flex-row">
+            <input
+                id="project-search"
+                name="search"
+                type="search"
+                value="{{ $search }}"
+                maxlength="255"
+                placeholder="Cari nama atau deskripsi proyek..."
+                class="min-w-0 flex-1 rounded-xl border-slate-300 text-sm shadow-sm focus:border-red-500 focus:ring-red-500"
+            >
+            <div class="flex gap-2">
+                <button type="submit" class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">
+                    Cari proyek
+                </button>
+                @if ($search !== '')
+                    <a href="{{ route('employee.projects.index') }}" wire:navigate
+                        class="rounded-xl border border-slate-200 px-4 py-2.5 text-center text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                        Hapus pencarian
+                    </a>
+                @endif
+            </div>
+        </div>
+    </form>
+
     @if ($projects->isEmpty())
         <div class="rounded-2xl border border-dashed border-slate-200 bg-[#fffdfa] p-10 text-center">
-            <p class="text-sm font-semibold text-slate-700">Belum ada proyek</p>
-            <p class="mt-1 text-sm text-slate-500">Proyek akan muncul setelah Anda mendapat tugas di dalamnya.</p>
+            @if ($search !== '')
+                <p class="text-sm font-semibold text-slate-700">Proyek tidak ditemukan</p>
+                <p class="mt-1 text-sm text-slate-500">Coba kata kunci lain atau hapus pencarian.</p>
+            @else
+                <p class="text-sm font-semibold text-slate-700">Belum ada proyek</p>
+                <p class="mt-1 text-sm text-slate-500">Proyek akan muncul setelah Anda mendapat tugas di dalamnya.</p>
+            @endif
         </div>
     @else
         <div class="grid gap-4 xl:grid-cols-2">

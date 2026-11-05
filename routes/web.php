@@ -135,6 +135,11 @@ Route::middleware([
         Route::get('projects', [PMController::class, 'projectsIndex'])
             ->name('projects.index');
 
+        Route::get(
+            'reports/projects.pdf',
+            [PMController::class, 'exportProjectsReport']
+        )->name('reports.projects.pdf');
+
         Route::get('projects/create', [PMController::class, 'projectsCreate'])
             ->name('projects.create');
 

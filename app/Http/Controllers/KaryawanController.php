@@ -20,8 +20,13 @@ use Throwable;
 
 class KaryawanController extends Controller
 {
-    public function projectsIndex(): View
+    public function projectsIndex(Request $request): View
     {
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+        $search = trim($validated['search'] ?? '');
+
         $assignedTasks = fn ($query) => $query->whereHas(
             'assignees',
             fn ($assigneeQuery) => $assigneeQuery
@@ -30,15 +35,19 @@ class KaryawanController extends Controller
 
         $projects = Project::query()
             ->whereHas('tasks', $assignedTasks)
+            ->when($search !== '', fn ($query) => $query
+                ->where(fn ($projectQuery) => $projectQuery
+                    ->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%')))
             ->with(['currentStage'])
             ->withCount([
                 'tasks',
                 'tasks as my_tasks_count' => $assignedTasks,
             ])
-            ->latest()
+            ->orderBy('name')
             ->get();
 
-        return view('employee.projects.index', compact('projects'));
+        return view('employee.projects.index', compact('projects', 'search'));
     }
 
     public function projectsShow(Project $project): View

@@ -10,9 +10,12 @@ use App\Models\Subtask;
 use App\Models\SubtaskAttachment;
 use App\Models\Task;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\CarbonImmutable;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -77,6 +80,110 @@ class PMController extends Controller
             'project-manager.projects.index',
             compact('projects')
         );
+    }
+
+    public function exportProjectsReport(Request $request): Response
+    {
+        $validated = $request->validate([
+            'period' => ['required', 'in:all,month'],
+            'month' => [
+                'required_if:period,month',
+                'nullable',
+                'date_format:Y-m',
+            ],
+        ]);
+
+        $period = $validated['period'];
+        $periodStart = null;
+        $periodEnd = null;
+        $periodLabel = 'Semua periode';
+
+        if ($period === 'month') {
+            $month = CarbonImmutable::createFromFormat('!Y-m', $validated['month']);
+            $periodStart = $month->startOfMonth();
+            $periodEnd = $month->endOfMonth();
+            $periodLabel = $month->locale('id')->translatedFormat('F Y');
+        }
+
+        $projectQuery = Project::query()
+            ->where('created_by', Auth::id())
+            ->when(
+                $period === 'month',
+                fn ($query) => $query->whereBetween('created_at', [
+                    $periodStart,
+                    $periodEnd,
+                ])
+            );
+
+        $projects = (clone $projectQuery)
+            ->with([
+                'currentStage',
+                'tasks' => fn ($query) => $query->withCount([
+                    'subtasks',
+                    'subtasks as completed_subtasks_count' => fn ($subtaskQuery) => $subtaskQuery
+                        ->where('status', 'completed'),
+                ]),
+            ])
+            ->withCount([
+                'tasks',
+                'tasks as unfinished_tasks_count' => fn ($query) => $query
+                    ->whereNotIn('status', ['completed', 'cancelled']),
+                'tasks as cancelled_tasks_count' => fn ($query) => $query
+                    ->where('status', 'cancelled'),
+            ])
+            ->orderByDesc('created_at')
+            ->get();
+
+        $totalProjects = Project::query()
+            ->where('created_by', Auth::id())
+            ->count();
+        $statusCounts = $projects
+            ->countBy('status')
+            ->all();
+        $reportProjects = $projects->map(fn (Project $project): array => [
+            'project' => $project,
+            'progress' => $this->calculateProjectReportProgress($project),
+        ]);
+
+        $filenamePeriod = $period === 'month'
+            ? $periodStart->format('Y-m')
+            : 'semua-periode';
+        $filename = 'laporan-proyek-'.$filenamePeriod.'.pdf';
+
+        return Pdf::loadView('project-manager.reports.projects', [
+            'projects' => $reportProjects,
+            'periodLabel' => $periodLabel,
+            'totalProjects' => $totalProjects,
+            'reportProjectCount' => $projects->count(),
+            'statusCounts' => $statusCounts,
+            'generatedAt' => now(),
+        ])
+            ->setPaper('a4', 'portrait')
+            ->stream($filename);
+    }
+
+    private function calculateProjectReportProgress(Project $project): int
+    {
+        $tasks = $project->tasks
+            ->where('status', '!=', 'cancelled');
+
+        if ($tasks->isEmpty()) {
+            return 0;
+        }
+
+        $totalProgress = $tasks->sum(function (Task $task): float {
+            if ($task->status === 'completed') {
+                return 100;
+            }
+
+            if ($task->subtasks_count === 0) {
+                return 0;
+            }
+
+            return ($task->completed_subtasks_count / $task->subtasks_count) * 100;
+        });
+
+        return (int) round($totalProgress / $tasks->count());
     }
 
     public function projectsCreate(): View

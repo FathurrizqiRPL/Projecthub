@@ -9,20 +9,68 @@
     <div
         class="mb-8 rounded-3xl border border-red-100
                bg-gradient-to-r from-red-50 to-[#fffdfa]
-               p-6 lg:p-8"
+               p-6 lg:flex lg:items-start lg:justify-between lg:gap-8 lg:p-8"
     >
-        <p class="text-sm font-semibold text-red-600">
-            Selamat datang kembali
-        </p>
+        <div>
+            <p class="text-sm font-semibold text-red-600">
+                Selamat datang kembali
+            </p>
 
-        <h2 class="mt-2 text-2xl font-bold text-slate-900">
-            Halo, {{ auth()->user()->name }} 👋
-        </h2>
+            <h2 class="mt-2 text-2xl font-bold text-slate-900">
+                Halo, {{ auth()->user()->name }} 👋
+            </h2>
 
-        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Kelola proyek, anggota tim, tugas, dan pantau
-            perkembangan pekerjaan melalui ProjectHub.
-        </p>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                Kelola proyek, anggota tim, tugas, dan pantau
+                perkembangan pekerjaan melalui ProjectHub.
+            </p>
+        </div>
+
+        <div class="mt-5 flex flex-col gap-3 lg:mt-0 lg:items-end">
+            <p class="text-sm font-semibold text-slate-700">Ekspor laporan proyek</p>
+
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <a
+                    href="{{ route('project-manager.reports.projects.pdf', ['period' => 'all']) }}"
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-flex items-center justify-center rounded-xl
+                           border border-red-200 bg-white px-4 py-2.5
+                           text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                >
+                    Semua periode
+                </a>
+
+                <form
+                    method="GET"
+                    action="{{ route('project-manager.reports.projects.pdf') }}"
+                    target="_blank"
+                    class="flex items-end gap-2"
+                >
+                    <input type="hidden" name="period" value="month">
+                    <div>
+                        <label for="report-month" class="block text-xs font-semibold text-slate-600">
+                            Per bulan
+                        </label>
+                        <input
+                            id="report-month"
+                            name="month"
+                            type="month"
+                            value="{{ now()->format('Y-m') }}"
+                            required
+                            class="mt-1 block rounded-xl border-slate-300 text-sm shadow-sm focus:border-red-500 focus:ring-red-500"
+                        >
+                    </div>
+                    <button
+                        type="submit"
+                        class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold
+                               text-white transition hover:bg-red-700"
+                    >
+                        Ekspor
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
 
