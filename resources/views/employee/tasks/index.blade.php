@@ -35,9 +35,8 @@
         <h3 class="font-semibold text-slate-900">Aksi cepat</h3>
         <p class="mt-1 text-sm text-slate-500">Buka tugas yang perlu segera Anda tindak lanjuti.</p>
 
-        <div class="mt-5 grid gap-3 sm:grid-cols-2">
+        <div class="mt-5 grid gap-3">
             @foreach ([
-                ['key' => 'pending', 'title' => 'Mulai tugas', 'empty' => 'Tidak ada tugas baru yang perlu dimulai.', 'style' => 'bg-red-600 text-white hover:bg-red-700'],
                 ['key' => 'revision', 'title' => 'Lanjutkan revisi', 'empty' => 'Tidak ada revisi yang perlu ditindaklanjuti.', 'style' => 'border border-slate-200 text-slate-700 hover:bg-slate-50'],
             ] as $action)
                 @php($actionTask = $quickActionTasks[$action['key']])
@@ -57,6 +56,54 @@
                 @endif
             @endforeach
         </div>
+    </section>
+
+    <section class="rounded-2xl border border-red-100 bg-[#fffdfa] p-6 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900">Tugas baru</h3>
+                <p class="mt-1 text-sm text-slate-500">Tugas yang diberikan kepada Anda dan belum mulai dikerjakan.</p>
+            </div>
+
+            <span class="rounded-full bg-red-50 px-3 py-1 text-sm font-semibold text-red-700">
+                {{ $newTasks->count() }} tugas
+            </span>
+        </div>
+
+        @if ($newTasks->isEmpty())
+            <div class="mt-5 rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center">
+                <p class="text-sm font-semibold text-slate-600">Belum ada tugas baru</p>
+                <p class="mt-1 text-xs text-slate-400">Tugas yang baru diberikan akan muncul di bagian ini.</p>
+            </div>
+        @else
+            <div class="mt-5 space-y-3">
+                @foreach ($newTasks as $newTask)
+                    <article class="flex flex-col gap-4 rounded-xl border border-red-100 bg-red-50/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h4 class="truncate font-semibold text-slate-900">{{ $newTask->title }}</h4>
+                                <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-700">Baru</span>
+                            </div>
+                            <p class="mt-1 text-xs text-slate-500">
+                                {{ $newTask->project?->name ?? '-' }}
+                                <span class="mx-1 text-slate-300">·</span>
+                                {{ $newTask->stage?->name ?? '-' }}
+                                <span class="mx-1 text-slate-300">·</span>
+                                Tenggat {{ $newTask->deadline?->locale('id')->translatedFormat('d F Y') ?? '-' }}
+                            </p>
+                        </div>
+
+                        <a
+                            href="{{ route('employee.tasks.show', $newTask) }}"
+                            wire:navigate
+                            class="shrink-0 rounded-xl bg-red-600 px-4 py-2.5 text-center text-xs font-semibold text-white transition hover:bg-red-700"
+                        >
+                            Lihat tugas
+                        </a>
+                    </article>
+                @endforeach
+            </div>
+        @endif
     </section>
 
     <div>

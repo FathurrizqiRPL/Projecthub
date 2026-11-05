@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->foreignId('project_stage_id')->constrained('project_stages')->cascadeOnDelete();
-            $table->foreignId('assigned_to')->constrained('users')->restrictOnDelete();
             $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
@@ -23,11 +22,18 @@ return new class extends Migration
                 'waiting_review',
                 'revision',
                 'completed',
+                'cancelled',
             ])->default('pending');
+            $table->unsignedInteger('review_cycle')->default(0);
+            $table->foreignId('cancelled_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+            $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
 
             $table->index(['project_id', 'project_stage_id']);
-            $table->index(['assigned_to', 'status']);
+            $table->index('status');
         });
     }
 

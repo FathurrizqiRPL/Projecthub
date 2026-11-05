@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
 
             $table->unsignedInteger('position');
+            $table->timestamp('completed_at')->nullable();
 
             $table->timestamps();
 
@@ -26,10 +27,22 @@ return new class extends Migration
                 'position',
             ]);
         });
+
+        Schema::table('projects', function (Blueprint $table) {
+            $table->foreignId('current_stage_id')
+                ->nullable()
+                ->after('status')
+                ->constrained('project_stages')
+                ->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('projects', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('current_stage_id');
+        });
+
         Schema::dropIfExists('project_stages');
     }
 };

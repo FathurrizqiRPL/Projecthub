@@ -21,6 +21,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->restrictOnDelete();
             $table->text('note');
+            $table->text('completion_note')->nullable();
             $table->enum('status', [
                 'open',
                 'in_progress',

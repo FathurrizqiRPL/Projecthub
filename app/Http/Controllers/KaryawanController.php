@@ -47,14 +47,17 @@ class KaryawanController extends Controller
             'completed' => $tasks->where('status', 'completed')->count(),
         ];
 
+        $newTasks = $openTasks
+            ->where('status', 'pending')
+            ->values();
+
         $quickActionTasks = [
-            'pending' => $openTasks->first(fn (Task $task): bool => $task->status === 'pending'),
             'revision' => $openTasks->first(fn (Task $task): bool => $task->status === 'revision'),
         ];
 
         return view(
             'employee.tasks.index',
-            compact('tasks', 'taskSummary', 'quickActionTasks')
+            compact('tasks', 'newTasks', 'taskSummary', 'quickActionTasks')
         );
     }
 
@@ -154,6 +157,7 @@ class KaryawanController extends Controller
                 'status' => 'waiting_review',
                 'review_cycle' => $task->review_cycle + 1,
             ]);
+
         });
 
         return redirect()

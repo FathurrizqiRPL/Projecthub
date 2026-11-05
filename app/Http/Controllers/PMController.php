@@ -1152,6 +1152,7 @@ class PMController extends Controller
             );
 
             $task->update(['status' => 'completed']);
+
         });
 
         return redirect()
@@ -1232,6 +1233,7 @@ class PMController extends Controller
                 'status' => 'revision',
                 'review_cycle' => $cycle,
             ]);
+
         });
 
         return redirect()

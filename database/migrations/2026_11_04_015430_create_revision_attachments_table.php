@@ -22,9 +22,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::table('revision_items', function (Blueprint $table) {
-            $table->text('completion_note')->nullable()->after('note');
-        });
     }
 
     /**
@@ -33,9 +30,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('revision_attachments');
-
-        Schema::table('revision_items', function (Blueprint $table) {
-            $table->dropColumn('completion_note');
-        });
     }
 };

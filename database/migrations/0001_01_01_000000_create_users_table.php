@@ -15,6 +15,16 @@ return new class extends Migration
             $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['admin', 'project_manager', 'employee'])
+                ->default('employee');
+            $table->enum('status', ['active', 'inactive'])
+                ->default('active');
+            $table->string('profile_photo')->nullable();
+            $table->string('department')->nullable();
+            $table->text('skills')->nullable();
+            $table->string('phone')->nullable();
+            $table->date('joined_at')->nullable();
+            $table->boolean('must_change_password')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });
