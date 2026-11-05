@@ -112,6 +112,14 @@
                     </div>
                 @endif
             </div>
+
+            @if ($canEditTask)
+                <a href="{{ route('project-manager.projects.tasks.edit', [$project, $task]) }}"
+                    wire:navigate
+                    class="inline-flex shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50">
+                    Edit tugas
+                </a>
+            @endif
         </div>
 
         <div class="pt-6 border-t mt-7 border-slate-100">

@@ -219,6 +219,16 @@ Route::middleware([
         )->name('projects.tasks.show');
 
         Route::get(
+            'projects/{project}/tasks/{task}/edit',
+            [PMController::class, 'tasksEdit']
+        )->name('projects.tasks.edit');
+
+        Route::put(
+            'projects/{project}/tasks/{task}',
+            [PMController::class, 'tasksUpdate']
+        )->name('projects.tasks.update');
+
+        Route::get(
             'projects/{project}/tasks/{task}/subtasks/{subtask}/attachments/{attachment}',
             [PMController::class, 'downloadSubtaskAttachment']
         )->name('projects.tasks.attachments.download');
@@ -258,6 +268,16 @@ Route::middleware([
     ->group(function () {
 
         Route::get(
+            'projects',
+            [KaryawanController::class, 'projectsIndex']
+        )->name('projects.index');
+
+        Route::get(
+            'projects/{project}',
+            [KaryawanController::class, 'projectsShow']
+        )->name('projects.show');
+
+        Route::get(
             'tasks',
             [KaryawanController::class, 'tasksIndex']
         )->name('tasks.index');
@@ -286,6 +306,11 @@ Route::middleware([
             'tasks/{task}/subtasks/{subtask}',
             [KaryawanController::class, 'updateSubtask']
         )->name('tasks.subtasks.update');
+
+        Route::put(
+            'tasks/{task}/subtasks/{subtask}/attachments/{attachment}',
+            [KaryawanController::class, 'replaceSubtaskAttachment']
+        )->name('tasks.subtasks.attachments.update');
 
         Route::post(
             'tasks/{task}/subtasks/{subtask}/attachments',

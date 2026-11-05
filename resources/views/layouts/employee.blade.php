@@ -18,6 +18,8 @@
         {{ config('app.name', 'ProjectHub') }}
     </title>
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+
     <link rel="preconnect" href="https://fonts.bunny.net">
 
     <link
@@ -70,6 +72,22 @@
 
             {{-- Navigation --}}
             <nav class="flex-1 px-4 py-6 space-y-2">
+
+                <a
+                    href="{{ route('employee.projects.index') }}"
+                    wire:navigate
+                    class="flex items-center gap-3 rounded-xl
+                           px-4 py-3 text-sm transition
+                        {{ request()->routeIs('employee.projects.*')
+                            ? 'bg-red-50 font-semibold text-red-600'
+                            : 'font-medium text-slate-600 hover:bg-red-50 hover:text-red-600'
+                        }}"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 7.5 12 3l9 4.5-9 4.5-9-4.5ZM3 12l9 4.5 9-4.5M3 16.5l9 4.5 9-4.5"/>
+                    </svg>
+                    Proyek saya
+                </a>
 
                 {{-- Tugas --}}
                 <a

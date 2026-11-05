@@ -2,20 +2,87 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\RevisionItem;
 use App\Models\Subtask;
 use App\Models\SubtaskAttachment;
 use App\Models\Task;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 class KaryawanController extends Controller
 {
+    public function projectsIndex(): View
+    {
+        $assignedTasks = fn ($query) => $query->whereHas(
+            'assignees',
+            fn ($assigneeQuery) => $assigneeQuery
+                ->where('users.id', Auth::id())
+        );
+
+        $projects = Project::query()
+            ->whereHas('tasks', $assignedTasks)
+            ->with(['currentStage'])
+            ->withCount([
+                'tasks',
+                'tasks as my_tasks_count' => $assignedTasks,
+            ])
+            ->latest()
+            ->get();
+
+        return view('employee.projects.index', compact('projects'));
+    }
+
+    public function projectsShow(Project $project): View
+    {
+        $this->authorizeProjectAccess($project);
+
+        $project->load(['stages', 'currentStage']);
+        $validated = request()->validate([
+            'stage' => ['nullable', 'integer'],
+        ]);
+        $selectedStageId = $validated['stage'] ?? $project->current_stage_id;
+
+        if ($selectedStageId !== null) {
+            $stage = $project->stages->firstWhere('id', (int) $selectedStageId);
+            abort_unless($stage, 404);
+        } else {
+            $stage = $project->stages->first();
+        }
+
+        $tasks = $stage
+            ? $stage->tasks()
+                ->with([
+                    'assignees',
+                    'completionException',
+                    'subtasks',
+                ])
+                ->orderBy('created_at')
+                ->orderBy('id')
+                ->get()
+            : collect();
+
+        $myTasks = $tasks
+            ->filter(fn (Task $task): bool => $task->assignees->contains('id', Auth::id()))
+            ->values();
+        $teammateTasks = $tasks
+            ->reject(fn (Task $task): bool => $task->assignees->contains('id', Auth::id()))
+            ->values();
+
+        return view(
+            'employee.projects.show',
+            compact('project', 'stage', 'tasks', 'myTasks', 'teammateTasks')
+        );
+    }
+
     public function tasksIndex(): View
     {
         $tasks = Task::query()
@@ -63,7 +130,7 @@ class KaryawanController extends Controller
 
     public function tasksShow(Task $task): View
     {
-        $this->authorizeTask($task);
+        $isAssignee = $this->authorizeTaskView($task);
 
         $task->load([
             'project',
@@ -93,7 +160,8 @@ class KaryawanController extends Controller
         $completedSubtasks = $task->subtasks
             ->where('status', 'completed')
             ->count();
-        $canEditTask = ! in_array($task->project->status, ['completed', 'cancelled'], true);
+        $canEditTask = $isAssignee
+            && ! in_array($task->project->status, ['completed', 'cancelled'], true);
 
         return view(
             'employee.tasks.show',
@@ -101,6 +169,7 @@ class KaryawanController extends Controller
                 'task',
                 'totalSubtasks',
                 'completedSubtasks',
+                'isAssignee',
                 'canEditTask'
             )
         );
@@ -258,6 +327,33 @@ class KaryawanController extends Controller
         );
     }
 
+    private function authorizeTaskView(Task $task): bool
+    {
+        $isAssignee = $task->assignees()
+            ->where('users.id', Auth::id())
+            ->exists();
+
+        if (! $isAssignee) {
+            $this->authorizeProjectAccess($task->project);
+        }
+
+        return $isAssignee;
+    }
+
+    private function authorizeProjectAccess(Project $project): void
+    {
+        abort_unless(
+            $project->tasks()
+                ->whereHas(
+                    'assignees',
+                    fn ($query) => $query
+                        ->where('users.id', Auth::id())
+                )
+                ->exists(),
+            403
+        );
+    }
+
     private function ensureProjectIsOpen(Task $task): void
     {
         abort_unless(
@@ -305,11 +401,14 @@ class KaryawanController extends Controller
         Subtask $subtask,
         SubtaskAttachment $attachment
     ): StreamedResponse {
-        $this->authorizeTaskAndSubtask($task, $subtask);
+        $this->authorizeTaskView($task);
+        abort_unless($subtask->task_id === $task->id, 403);
         abort_unless($attachment->subtask_id === $subtask->id, 404);
-        abort_unless(Storage::disk('local')->exists($attachment->file_path), 404);
+        /** @var FilesystemAdapter $localDisk */
+        $localDisk = Storage::disk('local');
+        abort_unless($localDisk->exists($attachment->file_path), 404);
 
-        return Storage::disk('local')->response(
+        return $localDisk->response(
             $attachment->file_path,
             $attachment->original_name,
             ['X-Content-Type-Options' => 'nosniff'],
@@ -333,6 +432,92 @@ class KaryawanController extends Controller
         return redirect()
             ->route('employee.tasks.show', ['task' => $task])
             ->with('success', 'Lampiran berhasil dihapus.');
+    }
+
+    public function replaceSubtaskAttachment(
+        Request $request,
+        Task $task,
+        Subtask $subtask,
+        SubtaskAttachment $attachment
+    ): RedirectResponse {
+        $this->authorizeTaskAndSubtask($task, $subtask);
+        $this->ensureTaskCanBeEdited($task);
+        abort_unless($attachment->subtask_id === $subtask->id, 404);
+        abort_unless($attachment->uploaded_by === Auth::id(), 403);
+
+        $validated = $request->validate([
+            'attachment' => [
+                'required',
+                'file',
+                'max:10240',
+                'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip',
+            ],
+        ]);
+
+        $file = $validated['attachment'];
+        $newFilePath = $file->store('subtask-attachments', 'local');
+
+        if ($newFilePath === false) {
+            throw new RuntimeException('Lampiran pengganti gagal disimpan.');
+        }
+
+        try {
+            $oldFilePath = DB::transaction(function () use (
+                $task,
+                $subtask,
+                $attachment,
+                $file,
+                $newFilePath
+            ): string {
+                $lockedTask = Task::query()
+                    ->lockForUpdate()
+                    ->findOrFail($task->id);
+                $lockedAttachment = SubtaskAttachment::query()
+                    ->lockForUpdate()
+                    ->findOrFail($attachment->id);
+
+                $this->authorizeTaskAndSubtask($lockedTask, $subtask);
+                $this->ensureTaskCanBeEdited($lockedTask);
+                abort_unless($lockedAttachment->subtask_id === $subtask->id, 404);
+                abort_unless($lockedAttachment->uploaded_by === Auth::id(), 403);
+
+                $previousFilePath = $lockedAttachment->file_path;
+                $lockedAttachment->update([
+                    'original_name' => $file->getClientOriginalName(),
+                    'file_path' => $newFilePath,
+                    'mime_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                ]);
+
+                return $previousFilePath;
+            });
+        } catch (Throwable $exception) {
+            if (
+                Storage::disk('local')->exists($newFilePath)
+                && ! Storage::disk('local')->delete($newFilePath)
+            ) {
+                throw new RuntimeException(
+                    'Lampiran gagal diperbarui dan file pengganti sementara tidak dapat dibersihkan.',
+                    previous: $exception
+                );
+            }
+
+            throw $exception;
+        }
+
+        if (
+            $oldFilePath !== $newFilePath
+            && Storage::disk('local')->exists($oldFilePath)
+            && ! Storage::disk('local')->delete($oldFilePath)
+        ) {
+            throw new RuntimeException(
+                'Lampiran baru tersimpan, tetapi file lampiran lama gagal dihapus.'
+            );
+        }
+
+        return redirect()
+            ->route('employee.tasks.show', ['task' => $task])
+            ->with('success', 'Lampiran berhasil diganti.');
     }
 
     /**
@@ -373,6 +558,8 @@ class KaryawanController extends Controller
         $this->ensureTaskCanBeEdited($task);
 
         $validated = $request->validate([
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string'],
             'status' => ['sometimes', 'required', 'in:pending,completed'],
             'completion_note' => [
                 'required_if:status,completed',
@@ -380,29 +567,56 @@ class KaryawanController extends Controller
                 'string',
                 'max:5000',
             ],
-            'attachments' => ['required', 'array', 'min:1', 'max:5'],
+            'attachments' => [
+                'required_if:status,completed',
+                'array',
+                'min:1',
+                'max:5',
+            ],
             'attachments.*' => [
+                'required_with:attachments',
                 'file',
                 'max:10240',
                 'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip',
             ],
         ]);
 
+        $hasUpdates = array_key_exists('title', $validated)
+            || array_key_exists('description', $validated)
+            || array_key_exists('status', $validated)
+            || array_key_exists('completion_note', $validated)
+            || ! empty($validated['attachments']);
+
+        abort_unless($hasUpdates, 422, 'Tidak ada perubahan untuk disimpan.');
+
+        $subtaskUpdates = array_intersect_key(
+            $validated,
+            array_flip(['title', 'description'])
+        );
+
         if (array_key_exists('status', $validated)) {
             $isCompleted = $validated['status'] === 'completed';
 
-            $subtask->update([
+            $statusUpdates = [
                 'status' => $validated['status'],
-                'completed_by' => $isCompleted ? Auth::id() : null,
-                'completed_at' => $isCompleted ? now() : null,
-                'completion_note' => $isCompleted
-                    ? ($validated['completion_note'] ?? null)
-                    : null,
-            ]);
+                'completed_by' => null,
+                'completed_at' => null,
+                'completion_note' => null,
+            ];
+
+            if ($isCompleted) {
+                $statusUpdates['completed_by'] = Auth::id();
+                $statusUpdates['completed_at'] = now();
+                $statusUpdates['completion_note'] = $validated['completion_note'] ?? null;
+            }
+
+            $subtaskUpdates = array_merge($subtaskUpdates, $statusUpdates);
         } elseif (array_key_exists('completion_note', $validated)) {
-            $subtask->update([
-                'completion_note' => $validated['completion_note'],
-            ]);
+            $subtaskUpdates['completion_note'] = $validated['completion_note'];
+        }
+
+        if ($subtaskUpdates !== []) {
+            $subtask->update($subtaskUpdates);
         }
 
         foreach ($validated['attachments'] ?? [] as $file) {
@@ -417,14 +631,15 @@ class KaryawanController extends Controller
             ]);
         }
 
+        $successMessage = 'Subtask berhasil diperbarui.';
+
+        if (($validated['status'] ?? null) === 'completed') {
+            $successMessage = 'Laporan penyelesaian subtask berhasil dikirim.';
+        }
+
         return redirect()
             ->route('employee.tasks.show', ['task' => $task])
-            ->with(
-                'success',
-                ($validated['status'] ?? null) === 'completed'
-                    ? 'Laporan penyelesaian subtask berhasil dikirim.'
-                    : 'Subtask berhasil diperbarui.'
-            );
+            ->with('success', $successMessage);
     }
 
     private function authorizeTaskAndSubtask(

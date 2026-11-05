@@ -39,7 +39,9 @@
             @foreach ([
                 ['key' => 'revision', 'title' => 'Lanjutkan revisi', 'empty' => 'Tidak ada revisi yang perlu ditindaklanjuti.', 'style' => 'border border-slate-200 text-slate-700 hover:bg-slate-50'],
             ] as $action)
-                @php($actionTask = $quickActionTasks[$action['key']])
+                @php
+                    $actionTask = $quickActionTasks[$action['key']];
+                @endphp
                 @if ($actionTask)
                     <a href="{{ route('employee.tasks.show', $actionTask) }}" wire:navigate class="flex items-center justify-between gap-4 rounded-xl px-4 py-3 text-sm font-semibold transition {{ $action['style'] }}">
                         <span class="min-w-0">

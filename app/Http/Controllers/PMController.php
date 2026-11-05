@@ -1064,6 +1064,8 @@ class PMController extends Controller
             ->where('status', 'completed')
             ->count();
         $canModifyProject = ! in_array($project->status, ['completed', 'cancelled'], true);
+        $canEditTask = $canModifyProject
+            && ! in_array($task->status, ['completed', 'cancelled'], true);
 
         return view(
             'project-manager.tasks.show',
@@ -1072,9 +1074,125 @@ class PMController extends Controller
                 'task',
                 'totalSubtasks',
                 'completedSubtasks',
-                'canModifyProject'
+                'canModifyProject',
+                'canEditTask'
             )
         );
+    }
+
+    public function tasksEdit(
+        Project $project,
+        Task $task
+    ): View {
+        $this->authorizeProject($project);
+        $this->authorizeTask($project, $task);
+        $this->ensureProjectCanBeModified($project);
+        $this->ensureTaskCanBeEdited($task);
+
+        $project->load(['stages', 'members']);
+        $task->load(['assignees', 'stage']);
+        $stages = $project->stages
+            ->filter(fn ($stage): bool => $stage->completed_at === null || $stage->is($task->stage))
+            ->sortBy('position')
+            ->values();
+
+        return view(
+            'project-manager.tasks.edit',
+            compact('project', 'task', 'stages')
+        );
+    }
+
+    public function tasksUpdate(
+        Request $request,
+        Project $project,
+        Task $task
+    ): RedirectResponse {
+        $this->authorizeProject($project);
+        $this->authorizeTask($project, $task);
+        $this->ensureProjectCanBeModified($project);
+        $this->ensureTaskCanBeEdited($task);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'project_stage_id' => [
+                'required',
+                'integer',
+                Rule::exists('project_stages', 'id')
+                    ->where(fn ($query) => $query
+                        ->where('project_id', $project->id)),
+            ],
+            'assignees' => ['required', 'array', 'min:1'],
+            'assignees.*' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('project_members', 'user_id')
+                    ->where(fn ($query) => $query
+                        ->where('project_id', $project->id)),
+            ],
+            'deadline' => [
+                'nullable',
+                'date',
+                $project->start_date
+                    ? 'after_or_equal:'.$project->start_date->format('Y-m-d')
+                    : null,
+                $project->deadline
+                    ? 'before_or_equal:'.$project->deadline->format('Y-m-d')
+                    : null,
+            ],
+        ]);
+
+        DB::transaction(function () use ($project, $task, $validated): void {
+            $lockedProject = Project::query()
+                ->lockForUpdate()
+                ->findOrFail($project->id);
+
+            $this->authorizeProject($lockedProject);
+            $this->ensureProjectCanBeModified($lockedProject);
+
+            $lockedTask = Task::query()
+                ->lockForUpdate()
+                ->findOrFail($task->id);
+
+            $this->authorizeTask($lockedProject, $lockedTask);
+            $this->ensureTaskCanBeEdited($lockedTask);
+
+            $stage = $lockedProject->stages()
+                ->whereKey($validated['project_stage_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            abort_if(
+                $stage->completed_at !== null
+                    && (int) $stage->id !== (int) $lockedTask->project_stage_id,
+                422,
+                'Task tidak dapat dipindahkan ke tahap yang sudah selesai.'
+            );
+
+            $validAssigneeCount = $lockedProject->members()
+                ->whereIn('users.id', $validated['assignees'])
+                ->count();
+
+            abort_unless(
+                $validAssigneeCount === count($validated['assignees']),
+                422,
+                'Semua anggota tugas harus menjadi anggota project.'
+            );
+
+            $lockedTask->update([
+                'title' => $validated['title'],
+                'description' => $validated['description'] ?? null,
+                'project_stage_id' => $stage->id,
+                'deadline' => $validated['deadline'] ?? null,
+            ]);
+
+            $lockedTask->assignees()->sync($validated['assignees']);
+        });
+
+        return redirect()
+            ->route('project-manager.projects.tasks.show', [$project, $task])
+            ->with('success', 'Task berhasil diperbarui.');
     }
 
     public function downloadSubtaskAttachment(
@@ -1303,6 +1421,15 @@ class PMController extends Controller
             (int) $task->project_id ===
             (int) $project->id,
             404
+        );
+    }
+
+    private function ensureTaskCanBeEdited(Task $task): void
+    {
+        abort_unless(
+            ! in_array($task->status, ['completed', 'cancelled'], true),
+            422,
+            'Task yang sudah selesai atau dibatalkan tidak dapat diedit.'
         );
     }
 
