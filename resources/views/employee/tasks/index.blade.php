@@ -5,14 +5,63 @@
 
 @section('content')
 <div class="space-y-6">
-    <div>
+    <div class="rounded-3xl border border-red-100 bg-gradient-to-r from-red-50 to-[#fffdfa] p-6 lg:p-8">
+        <p class="text-sm font-semibold text-red-600">Selamat datang kembali</p>
         <h2 class="text-xl font-bold text-slate-900">
-            Tugas saya
+            Halo, {{ auth()->user()->name }} 👋
         </h2>
-
-        <p class="mt-1 text-sm text-slate-500">
-            Daftar tugas yang diberikan kepada Anda.
+        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            Pantau tugas Anda dan lanjutkan pekerjaan yang perlu dikerjakan atau direvisi.
         </p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        @foreach ([
+            ['label' => 'Total tugas', 'value' => $taskSummary['total'], 'hint' => 'Semua tugas yang diberikan'],
+            ['label' => 'Belum dikerjakan', 'value' => $taskSummary['pending'], 'hint' => 'Menunggu untuk dimulai'],
+            ['label' => 'Sedang dikerjakan', 'value' => $taskSummary['in_progress'], 'hint' => 'Tugas yang sedang berjalan'],
+            ['label' => 'Revisi', 'value' => $taskSummary['revision'], 'hint' => 'Perlu diperbaiki'],
+            ['label' => 'Selesai', 'value' => $taskSummary['completed'], 'hint' => 'Tugas yang telah selesai'],
+        ] as $summary)
+            <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">{{ $summary['label'] }}</p>
+                <p class="mt-3 text-3xl font-bold text-slate-900">{{ $summary['value'] }}</p>
+                <p class="mt-2 text-xs text-slate-400">{{ $summary['hint'] }}</p>
+            </div>
+        @endforeach
+    </div>
+
+    <section class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
+        <h3 class="font-semibold text-slate-900">Aksi cepat</h3>
+        <p class="mt-1 text-sm text-slate-500">Buka tugas yang perlu segera Anda tindak lanjuti.</p>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-2">
+            @foreach ([
+                ['key' => 'pending', 'title' => 'Mulai tugas', 'empty' => 'Tidak ada tugas baru yang perlu dimulai.', 'style' => 'bg-red-600 text-white hover:bg-red-700'],
+                ['key' => 'revision', 'title' => 'Lanjutkan revisi', 'empty' => 'Tidak ada revisi yang perlu ditindaklanjuti.', 'style' => 'border border-slate-200 text-slate-700 hover:bg-slate-50'],
+            ] as $action)
+                @php($actionTask = $quickActionTasks[$action['key']])
+                @if ($actionTask)
+                    <a href="{{ route('employee.tasks.show', $actionTask) }}" wire:navigate class="flex items-center justify-between gap-4 rounded-xl px-4 py-3 text-sm font-semibold transition {{ $action['style'] }}">
+                        <span class="min-w-0">
+                            <span class="block">{{ $action['title'] }}</span>
+                            <span class="mt-1 block truncate text-xs {{ $action['key'] === 'pending' ? 'text-red-100' : 'text-slate-500' }}">{{ $actionTask->title }} · {{ $actionTask->project?->name }}</span>
+                        </span>
+                        <span aria-hidden="true">→</span>
+                    </a>
+                @else
+                    <div class="rounded-xl border border-dashed border-slate-200 px-4 py-3">
+                        <p class="text-sm font-semibold text-slate-500">{{ $action['title'] }}</p>
+                        <p class="mt-1 text-xs text-slate-400">{{ $action['empty'] }}</p>
+                    </div>
+                @endif
+            @endforeach
+        </div>
+    </section>
+
+    <div>
+        <h3 class="text-lg font-bold text-slate-900">Semua tugas</h3>
+        <p class="mt-1 text-sm text-slate-500">Daftar tugas yang diberikan kepada Anda.</p>
     </div>
 
     @if ($tasks->isEmpty())
@@ -55,6 +104,7 @@
                         'waiting_review' => 'Menunggu peninjauan',
                         'revision' => 'Revisi',
                         'completed' => 'Selesai',
+                        'cancelled' => 'Dibatalkan',
                         default => ucfirst(
                             str_replace(
                                 '_',
@@ -80,6 +130,7 @@
                                     'border-amber-200 bg-amber-50 text-amber-700' => $task->completionException || $task->status === 'waiting_review',
                                     'border-orange-200 bg-orange-50 text-orange-700' => ! $task->completionException && $task->status === 'revision',
                                     'border-emerald-200 bg-emerald-50 text-emerald-700' => ! $task->completionException && $task->status === 'completed',
+                                    'border-slate-200 bg-slate-100 text-slate-500' => $task->status === 'cancelled',
                                 ])>
                                     {{ $statusLabel }}
                                 </span>

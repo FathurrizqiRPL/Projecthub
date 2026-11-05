@@ -1,7 +1,7 @@
 @extends('layouts.project-manager')
 
-@section('title', 'Ubah Proyek')
-@section('header', 'Ubah Proyek')
+@section('title', 'Edit Proyek')
+@section('header', 'Edit Proyek')
 
 @section('content')
 
@@ -10,7 +10,7 @@
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
 
         <h2 class="text-xl font-bold text-slate-900">
-            Ubah Proyek
+            Edit Proyek
         </h2>
 
         <p class="mt-1 text-sm text-slate-500">

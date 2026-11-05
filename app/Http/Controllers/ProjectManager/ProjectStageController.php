@@ -84,7 +84,7 @@ class ProjectStageController extends Controller
         abort_if(
             $project->status === 'completed',
             422,
-            'Workflow project yang sudah selesai tidak dapat diubah.'
+            'Workflow project yang sudah selesai tidak dapat diedit.'
         );
 
         $validated = $request->validate([
@@ -126,7 +126,7 @@ class ProjectStageController extends Controller
                 abort_unless(
                     $submittedExistingStageIds->all() === $existingStageIds->all(),
                     422,
-                    'Stage yang sudah ada tidak dapat dihapus atau diubah urutannya saat project aktif.'
+                    'Stage yang sudah ada tidak dapat dihapus dan urutannya tidak dapat diedit saat project aktif.'
                 );
             }
 

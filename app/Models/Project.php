@@ -33,6 +33,7 @@ class Project extends Model
         return Attribute::make(
             get: function (): int {
                 $tasks = $this->tasks()
+                    ->where('status', '!=', 'cancelled')
                     ->withCount([
                         'subtasks',
                         'subtasks as completed_subtasks_count' => fn ($query) => $query

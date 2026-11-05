@@ -4,6 +4,8 @@ namespace App\Http\Controllers\ProjectManager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Models\RevisionAttachment;
+use App\Models\RevisionItem;
 use App\Models\Subtask;
 use App\Models\SubtaskAttachment;
 use App\Models\Task;
@@ -216,10 +218,10 @@ class ProjectTaskController extends Controller
             ],
         ]);
 
-        DB::transaction(function () use (
+        $workflowStarted = DB::transaction(function () use (
             $project,
             $validated
-        ): void {
+        ): ?string {
             $lockedProject = Project::query()
                 ->lockForUpdate()
                 ->findOrFail($project->id);
@@ -255,6 +257,22 @@ class ProjectTaskController extends Controller
             $task->assignees()->sync(
                 $validated['assignees']
             );
+
+            $firstStage = $lockedProject->stages()
+                ->orderBy('position')
+                ->first();
+            $startsWorkflow = $firstStage
+                && $stage->is($firstStage)
+                && $lockedProject->current_stage_id === null;
+
+            if ($startsWorkflow) {
+                $lockedProject->update([
+                    'status' => 'active',
+                    'current_stage_id' => $firstStage->id,
+                ]);
+            }
+
+            return $startsWorkflow ? $stage->name : null;
         });
 
         return redirect()
@@ -267,7 +285,9 @@ class ProjectTaskController extends Controller
             )
             ->with(
                 'success',
-                'Task berhasil dibuat.'
+                $workflowStarted !== null
+                    ? 'Task berhasil dibuat. Workflow project otomatis dimulai pada tahap '.$workflowStarted.'.'
+                    : 'Task berhasil dibuat.'
             );
     }
 
@@ -281,6 +301,7 @@ class ProjectTaskController extends Controller
         $task->load([
             'stage',
             'creator',
+            'canceller',
             'assignees',
             'completionException',
             'subtasks' => fn ($query) => $query
@@ -294,6 +315,7 @@ class ProjectTaskController extends Controller
                 ->with([
                     'creator',
                     'resolver',
+                    'attachments',
                 ])
                 ->orderBy('cycle')
                 ->orderBy('id'),
@@ -328,6 +350,26 @@ class ProjectTaskController extends Controller
         $this->authorizeTask($project, $task);
         abort_unless($subtask->task_id === $task->id, 404);
         abort_unless($attachment->subtask_id === $subtask->id, 404);
+        abort_unless(Storage::disk('local')->exists($attachment->file_path), 404);
+
+        return Storage::disk('local')->response(
+            $attachment->file_path,
+            $attachment->original_name,
+            ['X-Content-Type-Options' => 'nosniff'],
+            'inline'
+        );
+    }
+
+    public function downloadRevisionAttachment(
+        Project $project,
+        Task $task,
+        RevisionItem $revisionItem,
+        RevisionAttachment $attachment
+    ): StreamedResponse {
+        $this->authorizeProject($project);
+        $this->authorizeTask($project, $task);
+        abort_unless($revisionItem->task_id === $task->id, 404);
+        abort_unless($attachment->revision_item_id === $revisionItem->id, 404);
         abort_unless(Storage::disk('local')->exists($attachment->file_path), 404);
 
         return Storage::disk('local')->response(
@@ -457,7 +499,7 @@ class ProjectTaskController extends Controller
             ->with('success', 'Catatan revisi berhasil dikirim ke employee.');
     }
 
-    public function destroy(
+    public function cancel(
         Project $project,
         Task $task
     ): RedirectResponse {
@@ -480,12 +522,16 @@ class ProjectTaskController extends Controller
             $this->authorizeTask($lockedProject, $lockedTask);
 
             abort_unless(
-                $lockedTask->status === 'pending',
+                ! in_array($lockedTask->status, ['completed', 'cancelled'], true),
                 422,
-                'Task yang sudah dikerjakan tidak dapat dihapus.'
+                'Task yang sudah selesai atau dibatalkan tidak dapat dibatalkan lagi.'
             );
 
-            $lockedTask->delete();
+            $lockedTask->update([
+                'status' => 'cancelled',
+                'cancelled_by' => Auth::id(),
+                'cancelled_at' => now(),
+            ]);
 
             return (int) $lockedTask->project_stage_id;
         });
@@ -500,7 +546,7 @@ class ProjectTaskController extends Controller
             )
             ->with(
                 'success',
-                'Task berhasil dihapus.'
+                'Task berhasil dibatalkan. Riwayat task tetap tersimpan.'
             );
     }
 
@@ -530,7 +576,7 @@ class ProjectTaskController extends Controller
         abort_unless(
             ! in_array($project->status, ['completed', 'cancelled'], true),
             422,
-            'Task tidak dapat diubah karena project sudah ditutup.'
+            'Task tidak dapat diedit karena project sudah ditutup.'
         );
     }
 }

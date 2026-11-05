@@ -19,6 +19,7 @@
         'waiting_review' => 'Menunggu peninjauan',
         'revision' => 'Revisi',
         'completed' => 'Selesai',
+        'cancelled' => 'Dibatalkan',
         default => ucfirst(
             str_replace('_', ' ', $task->status)
         ),
@@ -54,10 +55,17 @@
                 'border-amber-200 bg-amber-50 text-amber-700' => $task->completionException || $task->status === 'waiting_review',
                 'border-orange-200 bg-orange-50 text-orange-700' => ! $task->completionException && $task->status === 'revision',
                 'border-emerald-200 bg-emerald-50 text-emerald-700' => ! $task->completionException && $task->status === 'completed',
+                'border-slate-200 bg-slate-100 text-slate-500' => $task->status === 'cancelled',
             ])>
                 {{ $statusLabel }}
             </span>
         </div>
+
+        @if ($task->status === 'cancelled')
+            <div class="mt-5 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600">
+                Tugas ini sudah dibatalkan oleh PM. Riwayat tugas tetap tersimpan.
+            </div>
+        @endif
 
         <div class="flex flex-wrap mt-3 text-sm gap-x-5 gap-y-2 text-slate-500">
             <span>
@@ -206,13 +214,15 @@
         </div>
     </div>
 
-    @if ($task->revisionItems->isNotEmpty())
-        <div class="rounded-2xl border border-orange-200 bg-[#fffdfa] p-6 shadow-sm">
+    <div class="rounded-2xl border border-orange-200 bg-[#fffdfa] p-6 shadow-sm">
             <h3 class="font-bold text-slate-900">Item Revisi</h3>
             <p class="mt-1 text-sm text-slate-500">
                 Selesaikan semua item pada putaran aktif agar tugas dapat diajukan kembali.
             </p>
 
+            @if ($task->revisionItems->isEmpty())
+                <div class="mt-5 rounded-xl border border-dashed border-orange-200 bg-white p-6 text-center text-sm text-slate-500">Belum ada item revisi untuk tugas ini.</div>
+            @else
             <div class="mt-5 space-y-5">
                 @foreach ($task->revisionItems->groupBy('cycle') as $cycle => $revisionItems)
                     <section>
@@ -220,9 +230,9 @@
                             Putaran {{ $cycle }}
                         </h4>
 
-                        <ul class="mt-2 space-y-3">
+                        <div class="mt-3 grid gap-4 sm:grid-cols-2">
                             @foreach ($revisionItems as $revisionItem)
-                                <li class="rounded-xl border border-slate-200 bg-white p-4">
+                                <article x-data="{ showDetail: @js($errors->any() && (string) old('revision_item_id') === (string) $revisionItem->id) }" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                     <div class="flex flex-wrap items-start justify-between gap-3">
                                         <div>
                                             <p class="text-sm leading-6 whitespace-pre-line text-slate-700">
@@ -254,43 +264,37 @@
                                         && $task->status === 'revision'
                                         && $revisionItem->cycle === $task->review_cycle
                                         && $revisionItem->status !== 'resolved')
-                                        <form
-                                            action="{{ route('employee.tasks.revisions.update', ['task' => $task, 'revisionItem' => $revisionItem]) }}"
-                                            method="POST"
-                                            class="flex flex-wrap items-center gap-3 mt-4"
-                                        >
-                                            @csrf
-                                            @method('PATCH')
-
-                                            <label for="revision-status-{{ $revisionItem->id }}" class="text-xs font-semibold text-slate-600">
-                                                Status tindak lanjut
-                                            </label>
-                                            <select
-                                                id="revision-status-{{ $revisionItem->id }}"
-                                                name="status"
-                                                class="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm focus:border-red-600 focus:ring-red-600"
-                                            >
-                                                <option value="in_progress" {{ $revisionItem->status === 'in_progress' ? 'selected' : '' }}>
-                                                    Sedang dikerjakan
-                                                </option>
-                                                <option value="resolved">Sudah diperbaiki</option>
-                                            </select>
-                                            <button
-                                                type="submit"
-                                                class="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
-                                            >
-                                                Simpan
-                                            </button>
-                                        </form>
+                                        <button type="button" @click="showDetail = true" class="mt-4 rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700">Laporkan penyelesaian</button>
                                     @endif
-                                </li>
+
+                                    <button type="button" @click="showDetail = true" class="ml-2 mt-4 text-xs font-semibold text-slate-600 hover:text-red-700">Buka detail</button>
+
+                                    <div x-cloak x-show="showDetail" x-transition.opacity style="display:none" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 p-4" @click.self="showDetail = false" @keydown.escape.window="showDetail = false">
+                                        <section role="dialog" aria-modal="true" class="my-auto max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+                                            <div class="flex items-start justify-between gap-4"><div><h5 class="text-lg font-bold text-slate-900">Detail item revisi</h5><p class="mt-1 text-sm text-slate-500">Putaran {{ $cycle }}</p></div><button type="button" @click="showDetail = false" aria-label="Tutup detail" class="rounded-lg p-2 text-slate-400 hover:bg-slate-100">&times;</button></div>
+                                            <div class="mt-5 space-y-4 text-sm text-slate-600"><p class="whitespace-pre-line leading-6">{{ $revisionItem->note }}</p><p class="text-xs text-slate-400">Catatan dari {{ $revisionItem->creator?->name ?? '-' }}</p>
+                                                @if ($revisionItem->completion_note)<div class="rounded-xl bg-slate-50 p-4"><h6 class="text-xs font-semibold uppercase text-slate-400">Keterangan penyelesaian</h6><p class="mt-2 whitespace-pre-line leading-6">{{ $revisionItem->completion_note }}</p></div>@endif
+                                                @if ($revisionItem->attachments->isNotEmpty())<div><h6 class="text-xs font-semibold uppercase text-slate-400">Bukti yang dikirim</h6><ul class="mt-2 space-y-1">@foreach ($revisionItem->attachments as $attachment)<li class="text-xs text-slate-500">{{ $attachment->original_name }}</li>@endforeach</ul></div>@endif
+                                            </div>
+                                            @if ($canEditTask && $task->status === 'revision' && $revisionItem->cycle === $task->review_cycle && $revisionItem->status !== 'resolved')
+                                                <form action="{{ route('employee.tasks.revisions.update', ['task' => $task, 'revisionItem' => $revisionItem]) }}" method="POST" enctype="multipart/form-data" class="mt-6 space-y-4 border-t border-slate-100 pt-5">
+                                                    @csrf @method('PATCH')<input type="hidden" name="revision_item_id" value="{{ $revisionItem->id }}">
+                                                    <div><label for="revision-note-{{ $revisionItem->id }}" class="block text-sm font-semibold text-slate-700">Rincian revisi yang sudah diperbaiki</label><textarea id="revision-note-{{ $revisionItem->id }}" name="completion_note" rows="4" required maxlength="5000" class="mt-1.5 block w-full rounded-xl border-slate-300 text-sm focus:border-red-600 focus:ring-red-600" placeholder="Jelaskan perbaikan yang sudah dilakukan...">{{ old('completion_note') }}</textarea>@error('completion_note')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                                                    <div><label for="revision-files-{{ $revisionItem->id }}" class="block text-sm font-semibold text-slate-700">Bukti penyelesaian <span class="font-normal text-slate-400">(wajib, maks. 5 file)</span></label><input id="revision-files-{{ $revisionItem->id }}" type="file" name="attachments[]" required multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip" class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-600">@error('attachments')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror @error('attachments.*')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                                                    <div class="flex justify-end"><button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Kirim penyelesaian revisi</button></div>
+                                                </form>
+                                            @endif
+                                        </section>
+                                    </div>
+                                </article>
                             @endforeach
-                        </ul>
+                        </div>
                     </section>
                 @endforeach
             </div>
+            @endif
         </div>
-    @endif
+    </div>
 
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm">
         <div>

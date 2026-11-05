@@ -20,6 +20,8 @@ class Task extends Model
         'deadline',
         'status',
         'review_cycle',
+        'cancelled_by',
+        'cancelled_at',
     ];
 
     protected function casts(): array
@@ -27,6 +29,7 @@ class Task extends Model
         return [
             'deadline' => 'date',
             'review_cycle' => 'integer',
+            'cancelled_at' => 'datetime',
         ];
     }
 
@@ -71,6 +74,14 @@ class Task extends Model
         return $this->belongsTo(
             User::class,
             'created_by'
+        );
+    }
+
+    public function canceller(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'cancelled_by'
         );
     }
 

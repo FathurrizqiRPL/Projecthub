@@ -195,13 +195,13 @@ class SubtaskController extends Controller
         abort_unless(
             ! in_array($task->project()->value('status'), ['completed', 'cancelled'], true),
             422,
-            'Task tidak dapat diubah karena project sudah ditutup.'
+            'Task tidak dapat diedit karena project sudah ditutup.'
         );
 
         abort_unless(
             in_array($task->status, ['pending', 'in_progress', 'revision'], true),
             422,
-            'Subtask tidak dapat diubah saat task sedang direview atau sudah selesai.'
+            'Subtask tidak dapat diedit saat task sedang direview atau sudah selesai.'
         );
     }
 }

@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Ubah Pengguna')
-@section('header', 'Ubah Pengguna')
+@section('title', 'Edit Pengguna')
+@section('header', 'Edit Pengguna')
 
 @section('content')
 <div class="mx-auto max-w-4xl">
@@ -13,7 +13,7 @@
 
     <div class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
         <div class="mb-7">
-            <h2 class="text-lg font-bold text-slate-900">Ubah Data Pengguna</h2>
+            <h2 class="text-lg font-bold text-slate-900">Edit Data Pengguna</h2>
             <p class="mt-1 text-sm text-slate-500">Perbarui informasi akun {{ $user->name }}.</p>
         </div>
 

@@ -73,7 +73,7 @@
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
                                 <p class="text-sm font-medium text-slate-500">Pengguna tidak ditemukan.</p>
-                                <p class="mt-1 text-xs text-slate-400">Coba ubah kata pencarian atau Saring.</p>
+                                <p class="mt-1 text-xs text-slate-400">Coba edit kata pencarian atau Saring.</p>
                             </td>
                         </tr>
                     @endforelse

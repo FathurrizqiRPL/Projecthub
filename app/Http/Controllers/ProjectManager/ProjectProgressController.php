@@ -75,13 +75,13 @@ class ProjectProgressController extends Controller
             $currentStage = $project->currentStage;
             $currentStageTasks = $project->tasks()
                 ->where('project_stage_id', $currentStage->id);
-            $currentStageTaskCount = (clone $currentStageTasks)->count();
+            $stageTaskCount = (clone $currentStageTasks)->count();
             $incompleteCurrentStageTaskCount = (clone $currentStageTasks)
-                ->where('status', '!=', 'completed')
+                ->whereNotIn('status', ['completed', 'cancelled'])
                 ->count();
 
             abort_if(
-                $currentStageTaskCount === 0,
+                $stageTaskCount === 0,
                 422,
                 'Stage ini harus memiliki minimal satu task sebelum dapat diselesaikan.'
             );
@@ -155,7 +155,7 @@ class ProjectProgressController extends Controller
             );
 
             $incompleteTasks = $projectTasks
-                ->where('status', '!=', 'completed')
+                ->whereNotIn('status', ['completed', 'cancelled'])
                 ->sortBy('project_stage_id')
                 ->values();
 

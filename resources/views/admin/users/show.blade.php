@@ -171,7 +171,7 @@
                    text-sm font-semibold text-white
                    transition hover:bg-red-700"
         >
-            Ubah Pengguna
+            Edit Pengguna
         </a>
     </div>
 

@@ -214,6 +214,11 @@ Route::middleware([
             [ProjectTaskController::class, 'downloadAttachment']
         )->name('projects.tasks.attachments.download');
 
+        Route::get(
+            'projects/{project}/tasks/{task}/revisions/{revisionItem}/attachments/{attachment}',
+            [ProjectTaskController::class, 'downloadRevisionAttachment']
+        )->name('projects.tasks.revisions.attachments.download');
+
         Route::post(
             'projects/{project}/tasks/{task}/approve',
             [ProjectTaskController::class, 'approve']
@@ -224,10 +229,10 @@ Route::middleware([
             [ProjectTaskController::class, 'requestRevision']
         )->name('projects.tasks.request-revision');
 
-        Route::delete(
-            'projects/{project}/tasks/{task}',
-            [ProjectTaskController::class, 'destroy']
-        )->name('projects.tasks.destroy');
+        Route::patch(
+            'projects/{project}/tasks/{task}/cancel',
+            [ProjectTaskController::class, 'cancel']
+        )->name('projects.tasks.cancel');
     });
 
 /*

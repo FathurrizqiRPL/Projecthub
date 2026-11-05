@@ -31,9 +31,27 @@ class TaskController extends Controller
             ->latest()
             ->get();
 
+        $openTasks = $tasks->filter(fn (Task $task): bool => ! in_array($task->project?->status, ['completed', 'cancelled'], true)
+                && ! $task->completionException
+                && $task->status !== 'cancelled'
+        );
+
+        $taskSummary = [
+            'total' => $tasks->count(),
+            'pending' => $tasks->where('status', 'pending')->count(),
+            'in_progress' => $tasks->where('status', 'in_progress')->count(),
+            'revision' => $tasks->where('status', 'revision')->count(),
+            'completed' => $tasks->where('status', 'completed')->count(),
+        ];
+
+        $quickActionTasks = [
+            'pending' => $openTasks->first(fn (Task $task): bool => $task->status === 'pending'),
+            'revision' => $openTasks->first(fn (Task $task): bool => $task->status === 'revision'),
+        ];
+
         return view(
             'employee.tasks.index',
-            compact('tasks')
+            compact('tasks', 'taskSummary', 'quickActionTasks')
         );
     }
 
@@ -58,6 +76,7 @@ class TaskController extends Controller
                 ->with([
                     'creator',
                     'resolver',
+                    'attachments',
                 ])
                 ->orderBy('cycle')
                 ->orderBy('id'),
@@ -161,10 +180,12 @@ class TaskController extends Controller
         );
 
         $validated = $request->validate([
-            'status' => ['required', 'in:in_progress,resolved'],
+            'completion_note' => ['required', 'string', 'max:5000'],
+            'attachments' => ['required', 'array', 'min:1', 'max:5'],
+            'attachments.*' => ['file', 'max:10240', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip'],
         ]);
 
-        DB::transaction(function () use ($task, $revisionItem, $validated): void {
+        DB::transaction(function () use ($task, $revisionItem, $validated, $request): void {
             $task = Task::query()
                 ->lockForUpdate()
                 ->findOrFail($task->id);
@@ -185,14 +206,22 @@ class TaskController extends Controller
             );
 
             $revisionItem->update([
-                'status' => $validated['status'],
-                'resolved_by' => $validated['status'] === 'resolved'
-                    ? Auth::id()
-                    : null,
-                'resolved_at' => $validated['status'] === 'resolved'
-                    ? now()
-                    : null,
+                'status' => 'resolved',
+                'completion_note' => $validated['completion_note'],
+                'resolved_by' => Auth::id(),
+                'resolved_at' => now(),
             ]);
+
+            foreach ($request->file('attachments', []) as $file) {
+                $path = $file->store('revision-attachments', 'local');
+                $revisionItem->attachments()->create([
+                    'uploaded_by' => Auth::id(),
+                    'original_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'mime_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                ]);
+            }
 
             $hasOpenItems = $task->revisionItems()
                 ->where('cycle', $task->review_cycle)
@@ -206,7 +235,7 @@ class TaskController extends Controller
 
         return redirect()
             ->route('employee.tasks.show', ['task' => $task])
-            ->with('success', 'Status item revisi berhasil diperbarui.');
+            ->with('success', 'Laporan penyelesaian revisi berhasil dikirim.');
     }
 
     private function authorizeTask(Task $task): void
@@ -227,7 +256,7 @@ class TaskController extends Controller
         abort_unless(
             ! in_array($task->project()->value('status'), ['completed', 'cancelled'], true),
             422,
-            'Task tidak dapat diubah karena project sudah ditutup.'
+            'Task tidak dapat diedit karena project sudah ditutup.'
         );
     }
 }

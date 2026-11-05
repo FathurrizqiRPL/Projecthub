@@ -133,6 +133,7 @@
                         'waiting_review' => 'Menunggu peninjauan',
                         'revision' => 'Revisi',
                         'completed' => 'Selesai',
+                        'cancelled' => 'Dibatalkan',
                         default => ucfirst(str_replace('_', ' ', $task->status)),
                     };
 
@@ -163,6 +164,7 @@
                                     'border-amber-200 bg-amber-50 text-amber-700' => $task->completionException || $task->status === 'waiting_review',
                                     'border-orange-200 bg-orange-50 text-orange-700' => ! $task->completionException && $task->status === 'revision',
                                     'border-emerald-200 bg-emerald-50 text-emerald-700' => ! $task->completionException && $task->status === 'completed',
+                                    'border-slate-200 bg-slate-100 text-slate-500' => $task->status === 'cancelled',
                                 ])>
                                     {{ $statusLabel }}
                                 </span>
@@ -236,17 +238,17 @@
                                 Detail tugas
                             </a>
 
-                            @if ($task->status === 'pending'
+                            @if (! in_array($task->status, ['completed', 'cancelled'], true)
                                 && ! in_array($project->status, ['completed', 'cancelled'], true))
                                 <form method="POST"
-                                    action="{{ route('project-manager.projects.tasks.destroy', [$project, $task]) }}"
-                                    onsubmit="return confirm('Yakin ingin menghapus tugas ini?')">
+                                    action="{{ route('project-manager.projects.tasks.cancel', [$project, $task]) }}"
+                                    onsubmit="return confirm('Yakin ingin membatalkan tugas ini? Riwayat tugas akan tetap tersimpan.')">
                                     @csrf
-                                    @method('Hapus')
+                                    @method('PATCH')
 
                                     <button type="submit"
                                         class="rounded-xl border border-red-200 px-4 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-50">
-                                        Hapus
+                                        Batalkan
                                     </button>
                                 </form>
                             @endif

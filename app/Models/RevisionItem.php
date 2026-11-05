@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RevisionItem extends Model
 {
@@ -12,6 +13,7 @@ class RevisionItem extends Model
         'cycle',
         'created_by',
         'note',
+        'completion_note',
         'status',
         'resolved_by',
         'resolved_at',
@@ -38,5 +40,10 @@ class RevisionItem extends Model
     public function resolver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resolved_by');
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(RevisionAttachment::class);
     }
 }

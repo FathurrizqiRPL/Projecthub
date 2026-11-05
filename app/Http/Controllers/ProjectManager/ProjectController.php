@@ -17,6 +17,7 @@ class ProjectController extends Controller
     {
         $projects = Project::query()
             ->where('created_by', Auth::id())
+            ->with(['stages', 'currentStage'])
             ->latest()
             ->paginate(10);
 
@@ -132,7 +133,7 @@ class ProjectController extends Controller
         ]);
 
         $incompleteTasks = $project->tasks()
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'cancelled'])
             ->with('stage')
             ->orderBy('project_stage_id')
             ->orderBy('title')
@@ -147,7 +148,7 @@ class ProjectController extends Controller
         $incompleteCurrentStageTaskCount = $project->currentStage
             ? $project->tasks()
                 ->where('project_stage_id', $project->current_stage_id)
-                ->where('status', '!=', 'completed')
+                ->whereNotIn('status', ['completed', 'cancelled'])
                 ->count()
             : 0;
         $projectProgress = $project->progress;

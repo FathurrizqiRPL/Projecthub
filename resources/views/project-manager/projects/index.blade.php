@@ -122,6 +122,22 @@
 
                     </div>
 
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <span class="text-xs font-medium text-slate-500">Tahapan proyek:</span>
+                        @forelse ($project->stages as $stage)
+                            <span @class([
+                                'rounded-full border px-2.5 py-1 text-xs font-medium',
+                                'border-emerald-200 bg-emerald-50 text-emerald-700' => $stage->completed_at || $project->status === 'completed',
+                                'border-red-200 bg-red-50 text-red-700' => ! $stage->completed_at && $project->current_stage_id === $stage->id && $project->status !== 'completed',
+                                'border-slate-200 bg-slate-50 text-slate-600' => ! $stage->completed_at && ($project->current_stage_id !== $stage->id || $project->status === 'completed'),
+                            ])>
+                                {{ $stage->name }}
+                            </span>
+                        @empty
+                            <span class="text-xs text-slate-400">Belum ada tahapan</span>
+                        @endforelse
+                    </div>
+
                     {{-- Deskripsi --}}
                     <p class="mt-2 text-sm text-slate-500">
                         {{ Str::limit(
@@ -178,7 +194,7 @@
                                text-slate-600 transition
                                hover:bg-slate-50"
                     >
-                        Ubah
+                        Edit
                     </a>
 
                 </div>

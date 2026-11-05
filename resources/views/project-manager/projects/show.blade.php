@@ -65,7 +65,7 @@
 
                 <a href="{{ route('project-manager.projects.edit', $project) }}" wire:navigate
                     class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
-                    Ubah Proyek
+                    Edit Proyek
                 </a>
             </div>
         </div>
@@ -100,10 +100,10 @@
                     <p class="text-sm font-semibold text-slate-800">Progres proyek</p>
                     <p class="mt-1 text-xs text-slate-500">Rata-rata Progres setiap tugas</p>
                 </div>
-                <span class="text-lg font-bold text-slate-900">{{ $projectProgresss }}%</span>
+                <span class="text-lg font-bold text-slate-900">{{ $projectProgress }}%</span>
             </div>
             <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
-                <div class="h-full rounded-full bg-red-600 transition-all" style="width: {{ $projectProgresss }}%"></div>
+                <div class="h-full rounded-full bg-red-600 transition-all" style="width: {{ $projectProgress }}%"></div>
             </div>
         </div>
     </div>
@@ -303,7 +303,7 @@
                 @if ($project->status === 'draft')
                     <div class="px-4 py-3 mt-5 border rounded-xl border-amber-200 bg-amber-50">
                         <p class="text-xs leading-5 text-amber-700">
-                            Proyek masih berstatus draf. Ubah status menjadi aktif untuk memulai alur kerja.
+                            Proyek masih berstatus draf. Edit status menjadi aktif untuk memulai alur kerja.
                         </p>
                     </div>
 
