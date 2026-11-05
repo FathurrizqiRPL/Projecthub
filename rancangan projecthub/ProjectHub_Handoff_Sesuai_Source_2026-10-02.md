@@ -1,5 +1,21 @@
 # ProjectHub — Handoff Teknis & Rancangan yang Sesuai Source
 
+## Scope penyelesaian terkini (5 November 2026)
+
+Dokumen ini adalah snapshot teknis lama. Untuk backlog saat ini, hanya tiga fitur berikut yang perlu diselesaikan:
+
+1. PM dapat mengedit task.
+2. Employee dapat mengedit judul dan deskripsi subtask.
+3. Employee dapat mengganti lampiran secara langsung.
+
+Notifikasi dan activity history tidak diperlukan. Employee melihat task baru melalui bagian Tugas Baru.
+
+**ERD:** tidak perlu tabel atau kolom baru. Fitur ini memakai `tasks`, `task_assignees`, `subtasks`, dan `subtask_attachments`.
+
+---
+
+
+
 > Dokumen ini dibuat sebagai **single source of truth untuk melanjutkan ProjectHub** berdasarkan bundle source yang tersedia di percakapan. Dokumen memisahkan dengan jelas antara **yang benar-benar sudah ada di source**, **yang ada secara struktur tetapi belum punya alur aksi lengkap**, dan **yang belum ada sama sekali**.
 >
 > Snapshot source yang dipakai untuk dokumen ini berasal dari bundle `app`, `database`, `resources`, dan `public` yang tersedia di percakapan. File source yang terlihat bertanggal sampai sekitar **28 September 2026**, sedangkan dokumen ini dibuat pada **2 Oktober 2026**.
@@ -300,24 +316,11 @@ Source saat ini melindungi akun Admin dari:
 
 # 7. Project Manager Dashboard
 
-Dashboard PM saat ini menampilkan:
+Dashboard PM menampilkan jumlah total project, project aktif, task yang belum selesai, task selesai, dan daftar project terbaru.
 
-- Total proyek yang dibuat PM.
-- Proyek aktif.
-- Proyek terbaru.
-- Placeholder untuk Tugas Berjalan.
-- Placeholder untuk Tugas Selesai.
+### Status
 
-Pada source view, dua statistik task masih menampilkan:
-
-```text
-—
-Modul tugas belum tersedia
-```
-
-Jadi statistik task dashboard PM **BELUM TERINTEGRASI** dengan data task.
-
----
+**SUDAH TERINTEGRASI** dengan data project dan task.
 
 # 8. Project
 
@@ -711,28 +714,9 @@ Task menampilkan antara lain:
 
 # 14. Task Detail PM
 
-PM dapat membuka detail task.
+PM dapat membuka detail task untuk melihat judul, status, project, stage, deadline, deskripsi, anggota, progress, subtask, dan lampiran.
 
-Yang terlihat:
-
-- judul;
-- status;
-- project;
-- stage;
-- deadline;
-- deskripsi;
-- anggota task;
-- progress;
-- subtask;
-- attachment pada subtask yang tersedia.
-
-### Status
-
-**SUDAH ADA sebagai READ-ONLY DETAIL**.
-
-Tidak ada endpoint `edit/update task` pada route PM saat ini.
-
----
+Saat ini detail task bersifat read-only. **Edit task oleh PM menjadi salah satu dari tiga fitur yang masih perlu diselesaikan.** Data tetap memakai tabel `tasks` dan pivot `task_assignees`; tidak perlu menambah tabel.
 
 # 15. Delete Task
 
@@ -899,24 +883,9 @@ View PM dan Employee juga menghitung progress dengan rumus yang sama.
 
 **SUDAH ADA**.
 
-## 18.3 Yang Belum Ada
+### 18.3 Fitur Subtask yang Masih Perlu Diselesaikan
 
-Tidak ditemukan route/controller untuk:
-
-- ~~membuat subtask;~~ **SUDAH ADA**
-- ~~menandai subtask completed;~~ **SUDAH ADA**
-- ~~mengembalikan subtask ke pending;~~ **SUDAH ADA**
-- ~~mengisi completion note;~~ **SUDAH ADA**
-- mengedit judul/deskripsi subtask;
-- submit subtask sebagai hasil kerja.
-
-Employee sekarang dapat membuat subtask dan memperbarui status/catatan penyelesaian.
-
-### Status
-
-**SEBAGIAN SUDAH ADA (create, complete, revert, completion_note)**.
-
----
+Employee sudah dapat membuat subtask, mengubah status, dan mengisi catatan penyelesaian. **Edit judul dan deskripsi subtask oleh Employee masih perlu dibuat.** Kolom `title` dan `description` sudah tersedia pada tabel `subtasks`, jadi tidak perlu perubahan ERD.
 
 # 19. Subtask Attachment
 
@@ -952,22 +921,9 @@ Attachment dapat diunggah dari detail task Employee, diunduh oleh Employee yang 
 
 **UPLOAD, DISPLAY, DOWNLOAD TEROTORISASI, DAN DELETE TERBATAS SUDAH ADA**.
 
-## 19.3 Yang Belum Ada
+### 19.3 Fitur Lampiran yang Masih Perlu Diselesaikan
 
-Belum ada endpoint untuk:
-
-```text
-upload attachment
-replace attachment
-remove attachment
-download/stream attachment melalui route aplikasi
-```
-
-### Status
-
-Belum ada penggantian file; uploader dapat menghapus file lama lalu mengunggah yang baru.
-
----
+Employee sudah dapat mengunggah, mengunduh, dan menghapus lampiran dengan pemeriksaan akses. **Penggantian lampiran secara langsung masih perlu dibuat.** Tabel `subtask_attachments` sudah menyimpan file path dan metadata yang diperlukan, jadi tidak perlu tabel baru.
 
 # 20. Revision Item
 
@@ -1202,46 +1158,11 @@ Project progress = rata-rata progress task (bobot sama untuk setiap task)
 
 # 25. Notification
 
-Tidak ditemukan implementasi notification khusus ProjectHub pada route/controller/model yang ditinjau.
-
-Event yang seharusnya nanti dapat memicu notification:
-
-```text
-PM assign task
-Employee submit review
-PM request revision
-PM approve task
-Task deadline mendekat
-```
-
-### Status
-
-**BELUM ADA**.
-
----
+Notifikasi bukan kebutuhan dalam scope saat ini. Employee melihat tugas yang belum dimulai melalui bagian **Tugas Baru** pada daftar task.
 
 # 26. Activity History / Audit Log
 
-Tidak ditemukan table/model/controller khusus activity log pada source yang ditinjau.
-
-Target:
-
-```text
-10:00 PM membuat task
-11:00 Employee mulai
-13:00 Employee menyelesaikan subtask
-14:00 Employee submit review
-15:00 PM request revision
-16:00 Employee resolve revision
-17:00 Submit ulang
-18:00 PM approve
-```
-
-### Status
-
-**BELUM ADA**.
-
----
+Activity history atau audit log tidak diperlukan dalam scope saat ini.
 
 # 27. Route Map Saat Ini
 
@@ -1439,76 +1360,19 @@ Checklist berdasarkan source yang ditinjau:
 
 ---
 
-# 30. Fitur yang Masih Belum Tercapai
+# 30. Fitur yang Masih Perlu Diselesaikan
 
-## Prioritas Paling Tinggi
+Backlog aktif hanya terdiri dari:
 
-### 1. Employee Task Actions
+1. **Edit task oleh PM** — menggunakan `tasks` dan pivot `task_assignees`.
+2. **Edit judul/deskripsi subtask oleh Employee** — menggunakan kolom yang sudah ada di `subtasks`.
+3. **Penggantian lampiran langsung oleh Employee** — menggunakan `subtask_attachments` yang sudah ada.
 
-Belum ada action untuk:
+Tidak ada tabel atau kolom database baru yang diperlukan untuk tiga fitur tersebut.
 
-- mulai task;
-- ubah status ke `in_progress`;
-- ~~mengelola subtask;~~ **SUDAH ADA**
-- ~~menyelesaikan subtask;~~ **SUDAH ADA**
-- ~~menambahkan completion note.~~ **SUDAH ADA**
+# 31. Scope Lain
 
-### 2. Attachment Actions
-
-- [x] Upload dengan validasi tipe dan ukuran file.
-- [x] Download melalui route terotorisasi.
-- [x] Hapus lampiran sendiri selama task dapat diedit.
-- Penggantian lampiran langsung belum tersedia.
-
-### 3. Submit for Review
-
-Belum ada:
-
-```text
-Employee → Waiting Review
-```
-
-### 4. PM Review
-
-Belum ada:
-
-```text
-Waiting Review
- ↓
-Approve / Revision
-```
-
-### 5. Revision Item
-
-Belum ada entity khusus untuk mencatat item revisi.
-
-### 6. Revision Cycle
-
-Belum ada flow:
-
-```text
-Revision
- ↓
-Fix
- ↓
-Submit Again
- ↓
-Review Again
-```
-
----
-
-# 31. Prioritas Menengah
-
-- [x] Integrasi otomatis stage dengan status task.
-- [x] Block Next Stage jika task stage belum selesai.
-- [x] Finalisasi stage terakhir dan project completion otomatis.
-- [x] Overall project progress pada detail project.
-- [ ] Dashboard PM real statistics task.
-- [ ] Notification.
-- [ ] Activity history.
-
----
+Dashboard PM sudah menampilkan statistik task. Notifikasi dan activity history tidak diperlukan. Keduanya bukan backlog aktif.
 
 # 32. Security / Business Rule yang Harus Diperiksa
 
@@ -1649,149 +1513,40 @@ Task menyimpan `review_cycle`; setiap submit baru menaikkan nomor putaran dan it
 
 ---
 
-# 35. Rekomendasi Urutan Implementasi Berikutnya
+# 35. Urutan Implementasi Berikutnya
 
-Alur submit/review/revisi task sudah tersedia. Prioritas berikutnya:
+Selesaikan tiga backlog aktif dengan urutan berikut:
 
-```text
-1. Stage completion rule
-   ↓
-2. Project completion rule
-   ↓
-3. Dashboard metrics
-   ↓
-4. Notification and activity history
-   ↓
-5. End-to-end testing across all roles
-   ↓
-```
+1. Edit task oleh PM.
+2. Edit judul dan deskripsi subtask oleh Employee.
+3. Ganti lampiran secara langsung.
 
-Alasannya:
-
-```text
-Attachment and task lifecycle
-  ↓
-Stage Completed
-  ↓
-Project Completed
-```
-
-Jadi jangan mengerjakan notification/history dulu sebelum lifecycle task benar-benar selesai.
-
----
+Ketiganya memakai tabel yang sudah ada; tidak perlu tabel atau kolom baru untuk ERD.
 
 # 36. Definition of Done ProjectHub
 
-Project baru dapat dianggap menyelesaikan rancangan inti jika flow berikut benar-benar berjalan:
+ProjectHub memenuhi scope saat ini setelah tiga fitur pada bagian 30 selesai:
 
-```text
-AUTH
- ✓
- ↓
-ROLE & ACCESS
- ✓
- ↓
-PROJECT
- ✓
- ↓
-WORKFLOW
- ✓
- ↓
-MEMBERS
- ✓
- ↓
-TASK
- ✓
- ↓
-ASSIGNMENT
- ✓
- ↓
-SUBTASK ACTION
- ✓
- ↓
-ATTACHMENT ACTION
- pending
- ↓
-EMPLOYEE WORK
- ✓
- ↓
-SUBMIT REVIEW
- ✓
- ↓
-PM REVIEW
- ✓
- ↓
-REVISION ITEM
- ✓
- ↓
-REVISION LOOP
- ✓
- ↓
-TASK COMPLETED
- ✓
- ↓
-STAGE COMPLETED
- pending
- ↓
-PROJECT COMPLETED
- pending
-```
+- PM dapat mengedit task.
+- Employee dapat mengedit judul dan deskripsi subtask.
+- Employee dapat mengganti lampiran secara langsung.
 
-Semua langkah di atas juga harus lolos authorization check.
-
----
+Fitur notifikasi dan activity history tidak termasuk definisi selesai.
 
 # 37. Instruksi untuk AI/Developer Berikutnya
 
-Gunakan dokumen ini bersama source code.
+Pertahankan otorisasi project PM, pembatasan akses task berdasarkan assignee, dan riwayat revision cycle yang sudah ada.
 
-## Jangan lakukan
+Fokus backlog hanya pada tiga fitur di bagian 30:
 
-- Saat task berstatus `revision`, pastikan tindak lanjut dilakukan pada item di putaran aktif.
-- Edit judul/deskripsi subtask belum tersedia; Employee dapat membuat subtask dan mengubah status/catatan penyelesaian.
-- Jangan menganggap attachment sudah bisa upload hanya karena relation sudah ada.
-- Pastikan perubahan status `waiting_review` hanya terjadi melalui aksi submit review yang tervalidasi.
-- Jangan menganggap project otomatis completed.
-- Jangan mengubah flow project yang sudah ada tanpa mengecek controller dan migration.
-- Jangan membuat ulang project dari nol.
+- Edit task oleh PM.
+- Edit judul dan deskripsi subtask oleh Employee.
+- Penggantian lampiran secara langsung.
 
-## Lakukan
-
-- Pertahankan CRUD yang sudah berjalan.
-- Pertahankan ownership check PM terhadap project.
-- Pertahankan assignee restriction Employee.
-- Gunakan `task_assignees` karena task memang sudah multi-assignee.
-- Gunakan progress subtask yang sudah menjadi accessor task.
-- Pertahankan item revisi dan nomor putaran sebagai history ketika Employee mengajukan ulang.
-- Tambahkan feature secara bertahap sesuai dependency.
-- Setelah setiap feature, uji role dan authorization.
-
----
+Gunakan tabel dan kolom yang sudah ada. Notifikasi dan activity history tidak termasuk scope saat ini.
 
 # 38. Ringkasan Akhir
 
-ProjectHub sudah memiliki fondasi project, workflow, task dan subtask, serta alur review dan revisi task.
+Alur inti ProjectHub sudah tersedia. Tiga pekerjaan yang tersisa adalah edit task oleh PM, edit judul/deskripsi subtask oleh Employee, dan penggantian lampiran secara langsung.
 
-Alur yang sekarang sudah berjalan:
-
-Bagian yang paling penting untuk dilanjutkan adalah:
-
-```text
-EMPLOYEE ACTIONS
-      ↓
-SUBTASK MANAGEMENT
-      ↓
-TASK STATUS TRANSITION
-      ↓
-SUBMIT FOR REVIEW
-      ↓
-PM REVIEW
-      ↓
-REVISION ITEM
-      ↓
-REVISION LOOP
-      ↓
-TASK COMPLETED
-```
-
-Fitur berikutnya yang masih perlu dilanjutkan terpisah adalah upload/control attachment, activity history dan notification, serta sinkronisasi penyelesaian stage/project. Tetap verifikasi route, otorisasi, dan action; keberadaan schema saja tidak membuktikan business flow sudah aktif.
+Ketiganya menggunakan tabel yang sudah ada (`tasks`, `task_assignees`, `subtasks`, dan `subtask_attachments`). ERD tidak memerlukan tabel atau kolom baru untuk scope ini.

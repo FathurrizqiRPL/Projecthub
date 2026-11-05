@@ -1,5 +1,23 @@
 # Rancangan ProjectHub
 
+## Backlog penyelesaian saat ini (5 November 2026)
+
+Alur inti ProjectHub sudah tersedia. Sisa pekerjaan yang masuk scope hanya:
+
+1. PM dapat mengedit task.
+2. Employee dapat mengedit judul dan deskripsi subtask.
+3. Employee dapat mengganti lampiran secara langsung.
+
+Notifikasi dan activity history tidak diperlukan dalam scope saat ini. Bagian Tugas Baru di halaman Employee sudah menjadi cara untuk melihat task yang belum dimulai.
+
+### Dampak terhadap ERD
+
+Tidak perlu menambah tabel atau kolom untuk tiga fitur tersebut. Fitur memakai tabel yang sudah ada: `tasks`, `task_assignees`, `subtasks`, dan `subtask_attachments`. Penggantian lampiran memperbarui record lampiran yang sudah ada; riwayat versi file tidak termasuk scope.
+
+---
+
+
+
 ## Flow Sistem, Fitur, Status Implementasi, dan Fitur yang Masih Belum Tercapai
 
 Dokumen ini menjadi blueprint pengembangan ProjectHub berdasarkan rancangan flow yang sudah dibahas dan kondisi fitur yang sudah terlihat pada source project.
@@ -597,66 +615,19 @@ Employee mengerjakan ulang
 
 # 12. Progress Task
 
-Progress dan status harus dipisahkan.
+Progress task dihitung dari jumlah subtask yang selesai dibanding seluruh subtask. Status task tetap mengendalikan workflow review secara terpisah. Employee tidak mengatur progress dengan angka manual.
 
-Contoh:
+### Status
 
-```text
-Progress = 100%
-Status   = WAITING REVIEW
-```
-
-Artinya Employee sudah menyelesaikan pekerjaan menurut dirinya, tetapi PM belum menyetujuinya.
-
-Setelah PM approve:
-
-```text
-Progress = 100%
-Status   = COMPLETED
-```
-
-Progress idealnya tidak boleh dipakai untuk menggantikan status workflow.
-
-### Yang masih perlu dipastikan
-
-- Bagaimana progress dihitung.
-- Apakah progress berdasarkan subtask.
-- Apakah Employee dapat menginput progress manual.
-- Progress 100% mengizinkan Employee mengajukan review; status berubah ke `waiting_review` dan keputusan tetap di tangan PM.
-- Apakah revision menurunkan progress atau hanya mengubah status.
-
----
+**SUDAH ADA** melalui accessor progress pada model Task dan tampilan task.
 
 # 13. Progress Project
 
-Project dapat memiliki overall progress berdasarkan task.
+Progress project dihitung dari rata-rata progress task dengan bobot yang sama. Task completed bernilai 100%, task tanpa subtask yang belum selesai bernilai 0%, dan task lain mengikuti progress subtask.
 
-Contoh:
+### Status
 
-```text
-Task A = 100%
-Task B = 100%
-Task C = 50%
-Task D = 0%
-```
-
-Project kemudian dapat menampilkan:
-
-```text
-Overall Progress = 62.5%
-```
-
-Namun aturan perhitungannya perlu dikunci supaya seluruh halaman memakai sumber nilai yang sama.
-
-### Yang masih perlu diverifikasi
-
-- Rumus overall progress.
-- Apakah semua task memiliki bobot sama.
-- Apakah task tertentu dapat memiliki bobot berbeda.
-- Apakah Waiting Review dihitung selesai secara progress.
-- Apakah Revision memengaruhi progress project.
-
----
+**SUDAH ADA** pada halaman detail project.
 
 # 14. Hubungan Stage dan Task
 
@@ -694,69 +665,11 @@ Lanjut ke Testing
 
 # 15. Notification
 
-Notification merupakan fitur pendukung untuk event penting.
-
-Contoh event:
-
-```text
-PM assign task
-   ↓
-Employee mendapatkan notification
-```
-
-```text
-Employee submit review
-   ↓
-PM mendapatkan notification
-```
-
-```text
-PM request revision
-   ↓
-Employee mendapatkan notification
-```
-
-```text
-PM approve task
-   ↓
-Employee mendapatkan notification
-```
-
-### Status
-
-**Belum terlihat sebagai fitur lengkap / perlu dibangun.**
-
----
+Notifikasi bukan bagian dari scope yang perlu diselesaikan. Untuk mengetahui task yang belum dimulai, Employee menggunakan bagian **Tugas Baru** pada halaman daftar task.
 
 # 16. Activity History
 
-History mencatat aktivitas penting.
-
-Contoh:
-
-```text
-10:00 PM membuat task
-10:30 Employee memulai task
-13:00 Employee upload attachment
-14:00 Employee submit review
-15:00 PM membuat Revision Item
-16:00 Employee menyelesaikan revision item
-17:00 Employee submit ulang
-18:00 PM approve task
-```
-
-Tujuan:
-
-- mengetahui siapa melakukan apa
-- mengetahui kapan aktivitas terjadi
-- menyimpan riwayat revisi
-- mempermudah audit pekerjaan
-
-### Status
-
-**Belum terlihat sebagai fitur lengkap / perlu dibangun.**
-
----
+Activity history atau audit log tidak diperlukan dalam scope saat ini.
 
 # 17. Aturan Bisnis Utama
 
@@ -899,110 +812,34 @@ Berdasarkan source yang sudah ditinjau:
 
 ---
 
-# 20. Fitur yang Belum Tercapai atau Masih Perlu Diverifikasi
+# 20. Fitur yang Perlu Diselesaikan
 
-Urutan berikut dapat dijadikan backlog utama.
+Hanya tiga fitur berikut yang menjadi backlog ProjectHub:
 
-## Prioritas 1 — Task Lifecycle
+1. **Edit task oleh PM**
+   - PM dapat mengubah data task yang sudah dibuat sesuai aturan akses project yang berlaku.
+   - Gunakan tabel `tasks` dan tabel pivot `task_assignees` yang sudah ada.
 
-- Pastikan status task lengkap.
-- Pastikan assignment Employee benar.
-- Pastikan Employee hanya melihat task yang menjadi tanggung jawabnya.
-- Pastikan progress task konsisten.
+2. **Edit judul dan deskripsi subtask oleh Employee**
+   - Employee hanya mengedit subtask pada task yang ditugaskan kepadanya.
+   - Gunakan kolom `title` dan `description` pada tabel `subtasks`.
 
-## Prioritas 2 — Subtask
+3. **Ganti lampiran secara langsung**
+   - Employee dapat mengganti file lampiran selama task masih dapat diedit.
+   - Gunakan tabel `subtask_attachments` yang sudah ada untuk menyimpan file dan metadatanya.
 
-- [x] UI subtask Employee.
-- [x] Update status/progress subtask.
-- [x] Hubungkan subtask dengan progress task jika aturan tersebut dipakai.
+## Dampak terhadap database dan ERD
 
-## Prioritas 3 — Attachment
-
-- [x] Upload file dengan validasi tipe dan batas ukuran.
-- [x] Daftar serta download file pada detail task dengan pemeriksaan akses.
-- [x] Employee dapat menghapus lampirannya saat task masih dapat diedit.
-
-## Prioritas 4 — Submit for Review
-
-- [x] Tombol submit dan validasi subtask.
-- [x] Perubahan status menjadi Waiting Review.
-- [x] Kunci perubahan subtask selama review dan setelah task selesai.
-
-## Prioritas 5 — PM Review
-
-- [x] Review queue per project.
-- [x] Halaman review task.
-- [x] Approve.
-- [x] Request Revision.
-- [x] Catatan revisi per item.
-
-## Prioritas 6 — Revision Item
-
-- [x] Entitas/record Revision Item.
-- [x] Catatan revisi dan status item.
-- [x] Employee dapat melihat dan mengerjakan item revisi.
-- [x] PM dapat memeriksa hasil revisi.
-- [x] History setiap revisi.
-- [x] Support multiple revision cycle.
-
-## Prioritas 7 — Sinkronisasi Project
-
-- [x] Semua task pada stage aktif wajib selesai sebelum PM dapat melanjutkan.
-- [x] Stage harus memiliki minimal satu task sebelum dapat diselesaikan.
-- [x] Stage selesai → project maju ke stage berikutnya.
-- [x] Project dapat ditutup dari stage terakhir; task belum selesai ditampilkan per stage dan memerlukan konfirmasi serta alasan pengecualian dari PM.
-- [x] Task yang dikecualikan dicatat dan dikunci setelah project ditutup.
-- [x] PM dapat menambahkan tahap Maintenance opsional di akhir workflow.
-- [x] Jika semua task selesai, project dapat ditutup tanpa pengecualian.
-- [x] Overall progress project dihitung dari rata-rata progress task dan ditampilkan di detail project.
-
-## Prioritas 8 — Notification & History
-
-- Notification event penting.
-- Activity history.
-- Riwayat revisi.
-
-## Prioritas 9 — Testing
-
-Test minimal end-to-end:
+Tidak diperlukan tabel atau kolom baru untuk backlog ini. Relasi yang relevan sudah tersedia:
 
 ```text
-Admin
-  ↓
-Buat Employee
-  ↓
-PM membuat Project
-  ↓
-PM membuat Workflow
-  ↓
-PM membuat Task
-  ↓
-Assign Employee
-  ↓
-Employee mengerjakan
-  ↓
-Employee upload hasil
-  ↓
-Employee submit review
-  ↓
-PM request revision
-  ↓
-Revision Item dibuat
-  ↓
-Employee menyelesaikan revision
-  ↓
-Submit ulang
-  ↓
-PM approve
-  ↓
-Task Completed
-  ↓
-Stage selesai
-  ↓
-Project selesai
+Project 1..* Task
+Task *..* User melalui task_assignees
+Task 1..* Subtask
+Subtask 1..* SubtaskAttachment
 ```
 
----
+Jika suatu saat perlu menyimpan versi lama lampiran sebagai riwayat, itu akan menjadi kebutuhan baru di luar scope sekarang dan mungkin memerlukan tabel versi lampiran tersendiri.
 
 # 21. Definisi Project Dianggap Selesai
 
