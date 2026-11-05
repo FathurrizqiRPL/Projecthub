@@ -1,15 +1,8 @@
 <?php
 
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Employee\SubtaskController;
-use App\Http\Controllers\Employee\TaskController as EmployeeTaskController;
-use App\Http\Controllers\ProjectManager\DashboardController as ProjectManagerDashboardController;
-use App\Http\Controllers\ProjectManager\ProjectController;
-use App\Http\Controllers\ProjectManager\ProjectMemberController;
-use App\Http\Controllers\ProjectManager\ProjectProgressController;
-use App\Http\Controllers\ProjectManager\ProjectStageController;
-use App\Http\Controllers\ProjectManager\ProjectTaskController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\PMController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -73,7 +66,7 @@ Route::middleware([
 
         Route::get(
             'dashboard',
-            [AdminDashboardController::class, 'index']
+            [AdminController::class, 'dashboard']
         )->name('dashboard');
 
         /*
@@ -82,42 +75,42 @@ Route::middleware([
 
         Route::get(
             'users',
-            [UserController::class, 'index']
+            [AdminController::class, 'index']
         )->name('users.index');
 
         Route::get(
             'users/create',
-            [UserController::class, 'create']
+            [AdminController::class, 'create']
         )->name('users.create');
 
         Route::post(
             'users',
-            [UserController::class, 'store']
+            [AdminController::class, 'store']
         )->name('users.store');
 
         Route::get(
             'users/{user}',
-            [UserController::class, 'show']
+            [AdminController::class, 'show']
         )->name('users.show');
 
         Route::get(
             'users/{user}/edit',
-            [UserController::class, 'edit']
+            [AdminController::class, 'edit']
         )->name('users.edit');
 
         Route::patch(
             'users/{user}',
-            [UserController::class, 'update']
+            [AdminController::class, 'update']
         )->name('users.update');
 
         Route::patch(
             'users/{user}/status',
-            [UserController::class, 'toggleStatus']
+            [AdminController::class, 'toggleStatus']
         )->name('users.status');
 
         Route::patch(
             'users/{user}/reset-password',
-            [UserController::class, 'resetPassword']
+            [AdminController::class, 'resetPassword']
         )->name('users.reset-password');
     });
 
@@ -136,102 +129,118 @@ Route::middleware([
 
         Route::get(
             'dashboard',
-            [ProjectManagerDashboardController::class, 'index']
+            [PMController::class, 'dashboard']
         )->name('dashboard');
 
-        Route::resource(
-            'projects',
-            ProjectController::class
-        );
+        Route::get('projects', [PMController::class, 'projectsIndex'])
+            ->name('projects.index');
+
+        Route::get('projects/create', [PMController::class, 'projectsCreate'])
+            ->name('projects.create');
+
+        Route::post('projects', [PMController::class, 'projectsStore'])
+            ->name('projects.store');
+
+        Route::get('projects/{project}', [PMController::class, 'projectsShow'])
+            ->name('projects.show');
+
+        Route::get('projects/{project}/edit', [PMController::class, 'projectsEdit'])
+            ->name('projects.edit');
+
+        Route::match(['put', 'patch'], 'projects/{project}', [PMController::class, 'projectsUpdate'])
+            ->name('projects.update');
+
+        Route::delete('projects/{project}', [PMController::class, 'projectsDestroy'])
+            ->name('projects.destroy');
 
         Route::get(
             'tasks',
-            [ProjectTaskController::class, 'allTasks']
+            [PMController::class, 'allTasks']
         )->name('tasks.index');
 
         Route::get(
             'projects/{project}/workflow',
-            [ProjectStageController::class, 'edit']
+            [PMController::class, 'workflowEdit']
         )->name('projects.workflow.edit');
 
         Route::post(
             'projects/{project}/workflow/maintenance',
-            [ProjectStageController::class, 'addMaintenance']
+            [PMController::class, 'addMaintenance']
         )->name('projects.workflow.maintenance');
 
         Route::put(
             'projects/{project}/workflow',
-            [ProjectStageController::class, 'update']
+            [PMController::class, 'workflowUpdate']
         )->name('projects.workflow.update');
 
         Route::get(
             'projects/{project}/members',
-            [ProjectMemberController::class, 'edit']
+            [PMController::class, 'membersEdit']
         )->name('projects.members.edit');
 
         Route::put(
             'projects/{project}/members',
-            [ProjectMemberController::class, 'update']
+            [PMController::class, 'membersUpdate']
         )->name('projects.members.update');
 
         Route::post(
             'projects/{project}/progress/start',
-            [ProjectProgressController::class, 'start']
+            [PMController::class, 'progressStart']
         )->name('projects.progress.start');
 
         Route::post(
             'projects/{project}/progress/next',
-            [ProjectProgressController::class, 'next']
+            [PMController::class, 'progressNext']
         )->name('projects.progress.next');
 
         Route::post(
             'projects/{project}/progress/complete',
-            [ProjectProgressController::class, 'complete']
+            [PMController::class, 'progressComplete']
         )->name('projects.progress.complete');
 
         Route::get(
             'projects/{project}/tasks',
-            [ProjectTaskController::class, 'index']
+            [PMController::class, 'tasksIndex']
         )->name('projects.tasks.index');
 
         Route::get(
             'projects/{project}/tasks/create',
-            [ProjectTaskController::class, 'create']
+            [PMController::class, 'tasksCreate']
         )->name('projects.tasks.create');
 
         Route::post(
             'projects/{project}/tasks',
-            [ProjectTaskController::class, 'store']
+            [PMController::class, 'tasksStore']
         )->name('projects.tasks.store');
 
         Route::get(
             'projects/{project}/tasks/{task}',
-            [ProjectTaskController::class, 'show']
+            [PMController::class, 'tasksShow']
         )->name('projects.tasks.show');
 
         Route::get(
             'projects/{project}/tasks/{task}/subtasks/{subtask}/attachments/{attachment}',
-            [ProjectTaskController::class, 'downloadAttachment']
+            [PMController::class, 'downloadSubtaskAttachment']
         )->name('projects.tasks.attachments.download');
 
         Route::get(
             'projects/{project}/tasks/{task}/revisions/{revisionItem}/attachments/{attachment}',
-            [ProjectTaskController::class, 'downloadRevisionAttachment']
+            [PMController::class, 'downloadRevisionAttachment']
         )->name('projects.tasks.revisions.attachments.download');
 
         Route::post(
             'projects/{project}/tasks/{task}/approve',
-            [ProjectTaskController::class, 'approve']
+            [PMController::class, 'approveTask']
         )->name('projects.tasks.approve');
 
         Route::post(
             'projects/{project}/tasks/{task}/request-revision',
-            [ProjectTaskController::class, 'requestRevision']
+            [PMController::class, 'requestRevision']
         )->name('projects.tasks.request-revision');
 
         Route::patch(
             'projects/{project}/tasks/{task}/cancel',
-            [ProjectTaskController::class, 'cancel']
+            [PMController::class, 'cancelTask']
         )->name('projects.tasks.cancel');
     });
 
@@ -250,52 +259,52 @@ Route::middleware([
 
         Route::get(
             'tasks',
-            [EmployeeTaskController::class, 'index']
+            [KaryawanController::class, 'tasksIndex']
         )->name('tasks.index');
 
         Route::get(
             'tasks/{task}',
-            [EmployeeTaskController::class, 'show']
+            [KaryawanController::class, 'tasksShow']
         )->name('tasks.show');
 
         Route::post(
             'tasks/{task}/start',
-            [EmployeeTaskController::class, 'start']
+            [KaryawanController::class, 'startTask']
         )->name('tasks.start');
 
         Route::post(
             'tasks/{task}/submit',
-            [EmployeeTaskController::class, 'submitForReview']
+            [KaryawanController::class, 'submitTaskForReview']
         )->name('tasks.submit');
 
         Route::post(
             'tasks/{task}/subtasks',
-            [SubtaskController::class, 'store']
+            [KaryawanController::class, 'storeSubtask']
         )->name('tasks.subtasks.store');
 
         Route::patch(
             'tasks/{task}/subtasks/{subtask}',
-            [SubtaskController::class, 'update']
+            [KaryawanController::class, 'updateSubtask']
         )->name('tasks.subtasks.update');
 
         Route::post(
             'tasks/{task}/subtasks/{subtask}/attachments',
-            [SubtaskController::class, 'uploadAttachment']
+            [KaryawanController::class, 'uploadSubtaskAttachment']
         )->name('tasks.subtasks.attachments.store');
 
         Route::get(
             'tasks/{task}/subtasks/{subtask}/attachments/{attachment}',
-            [SubtaskController::class, 'downloadAttachment']
+            [KaryawanController::class, 'downloadSubtaskAttachment']
         )->name('tasks.subtasks.attachments.download');
 
         Route::delete(
             'tasks/{task}/subtasks/{subtask}/attachments/{attachment}',
-            [SubtaskController::class, 'deleteAttachment']
+            [KaryawanController::class, 'deleteSubtaskAttachment']
         )->name('tasks.subtasks.attachments.destroy');
 
         Route::patch(
             'tasks/{task}/revisions/{revisionItem}',
-            [EmployeeTaskController::class, 'updateRevisionItem']
+            [KaryawanController::class, 'updateRevisionItem']
         )->name('tasks.revisions.update');
     });
 

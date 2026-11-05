@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -10,8 +9,31 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-class UserController extends Controller
+class AdminController extends Controller
 {
+    public function dashboard(): View
+    {
+        $totalUsers = User::count();
+
+        $totalProjectManagers = User::where('role', 'project_manager')->count();
+
+        $totalEmployees = User::where('role', 'employee')->count();
+
+        $totalActiveUsers = User::where('status', 'active')->count();
+
+        $recentUsers = User::latest()
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard', [
+            'totalUsers' => $totalUsers,
+            'totalProjectManagers' => $totalProjectManagers,
+            'totalEmployees' => $totalEmployees,
+            'totalActiveUsers' => $totalActiveUsers,
+            'recentUsers' => $recentUsers,
+        ]);
+    }
+
     /**
      * Tampilkan halaman User Management.
      */
@@ -193,42 +215,42 @@ class UserController extends Controller
                     'users',
                     'email'
                 )->ignore($user->id),
-            ],
+                ],
             'role' => [
                 'required',
                 Rule::in($allowedRoles),
-            ],
+                ],
             'department' => [
                 'nullable',
                 'string',
                 'max:255',
-            ],
+                ],
             'skills' => [
                 'nullable',
                 'string',
                 'max:1000',
-            ],
+                ],
             'phone' => [
                 'nullable',
                 'string',
                 'max:30',
-            ],
+                ],
             'joined_at' => [
                 'nullable',
                 'date',
-            ],
+                ],
         ], [
-            'name.required' => 'Nama lengkap wajib diisi.',
+                'name.required' => 'Nama lengkap wajib diisi.',
 
-            'username.required' => 'Username wajib diisi.',
-            'username.regex' => 'Username hanya boleh berisi huruf, angka, titik, tanda hubung, dan garis bawah.',
-            'username.unique' => 'Username sudah digunakan.',
+                'username.required' => 'Username wajib diisi.',
+                'username.regex' => 'Username hanya boleh berisi huruf, angka, titik, tanda hubung, dan garis bawah.',
+                'username.unique' => 'Username sudah digunakan.',
 
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email sudah digunakan.',
+                'email.email' => 'Format email tidak valid.',
+                'email.unique' => 'Email sudah digunakan.',
 
-            'role.required' => 'Role wajib dipilih.',
-        ]);
+                'role.required' => 'Role wajib dipilih.',
+            ]);
 
         $user->update([
             'name' => $validated['name'],

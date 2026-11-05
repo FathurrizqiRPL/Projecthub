@@ -76,12 +76,12 @@
                 Tugas berjalan
             </p>
 
-            <p class="mt-3 text-3xl font-bold text-slate-300">
-                —
+            <p class="mt-3 text-3xl font-bold text-slate-900">
+                {{ $ongoingTasks }}
             </p>
 
             <p class="mt-2 text-xs text-slate-400">
-                Modul tugas belum tersedia
+                Tugas yang belum selesai
             </p>
         </div>
 
@@ -95,12 +95,12 @@
                 Tugas selesai
             </p>
 
-            <p class="mt-3 text-3xl font-bold text-slate-300">
-                —
+            <p class="mt-3 text-3xl font-bold text-slate-900">
+                {{ $completedTasks }}
             </p>
 
             <p class="mt-2 text-xs text-slate-400">
-                Modul tugas belum tersedia
+                Tugas yang disetujui dan selesai
             </p>
         </div>
 
