@@ -39,6 +39,9 @@
                     <x-input-label for="email" value="Alamat email (opsional)" />
                     <x-text-input id="email" name="email" type="email" class="mt-2 block w-full" :value="old('email', $user->email)" placeholder="Belum diisi" />
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    <p class="mt-2 text-xs text-slate-400">
+                        Email akun hanya dapat diatur oleh administrator dan tidak diverifikasi melalui email.
+                    </p>
                 </div>
 
                 <div>

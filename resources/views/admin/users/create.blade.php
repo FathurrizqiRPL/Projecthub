@@ -108,6 +108,9 @@
                         :messages="$errors->get('email')"
                         class="mt-2"
                     />
+                    <p class="mt-2 text-xs text-slate-400">
+                        Email akun hanya dapat diatur oleh administrator dan tidak diverifikasi melalui email.
+                    </p>
                 </div>
 
                 <div>

@@ -18,7 +18,7 @@
                         {{ __('Informasi Profil') }}
                     </h2>
                     <p class="mt-1 text-sm text-slate-500">
-                        {{ __('Perbarui informasi profil dan alamat email akun Anda.') }}
+                        {{ __('Perbarui informasi profil Anda. Alamat email hanya dapat diatur oleh administrator.') }}
                     </p>
                 </header>
 
@@ -69,17 +69,10 @@
                     </div>
 
                     <div>
-                        <x-input-label for="email" :value="__('Email')" />
-                        <x-text-input
-                            id="email"
-                            name="email"
-                            type="email"
-                            class="mt-1 block w-full rounded-xl border-slate-300 focus:border-red-500 focus:ring-red-500"
-                            :value="old('email', auth()->user()->email)"
-                            required
-                            autocomplete="username"
-                        />
-                        <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                        <x-input-label for="email" :value="__('Alamat email')" />
+                        <p id="email" class="mt-1 text-sm text-slate-600">
+                            {{ auth()->user()->email ?: 'Belum diatur' }}
+                        </p>
                     </div>
 
                     <x-primary-button>{{ __('Simpan') }}</x-primary-button>

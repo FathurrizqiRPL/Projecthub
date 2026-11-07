@@ -15,19 +15,23 @@ test('profile page is displayed', function () {
         ->assertSee('Foto profil')
         ->assertSee('name="photo"', false)
         ->assertSee('enctype="multipart/form-data"', false)
+        ->assertDontSee('name="email"', false)
+        ->assertSee('Alamat email hanya dapat diatur oleh administrator.')
         ->assertSee('Perbarui kata sandi')
         ->assertDontSee('Alamat email Anda belum terverifikasi.')
         ->assertDontSee('verifikasi email');
 });
 
-test('profile information can be updated', function () {
-    $user = User::factory()->create(['must_change_password' => false]);
+test('profile information can be updated without changing the email', function () {
+    $user = User::factory()->create([
+        'email' => 'original@example.com',
+        'must_change_password' => false,
+    ]);
 
     $this->actingAs($user)
         ->from('/profile')
         ->patch('/profile', [
             'name' => 'Test User',
-            'email' => 'test@example.com',
         ])
         ->assertRedirect('/profile')
         ->assertSessionHas('status', 'profile-updated');
@@ -35,8 +39,28 @@ test('profile information can be updated', function () {
     $user->refresh();
 
     expect($user->name)->toBe('Test User')
-        ->and($user->email)->toBe('test@example.com');
+        ->and($user->email)->toBe('original@example.com');
 });
+
+test('project managers and employees cannot change their email through their profile', function (string $role) {
+    $user = User::factory()->create([
+        'role' => $role,
+        'email' => 'original@example.com',
+        'must_change_password' => false,
+    ]);
+
+    $this->actingAs($user)
+        ->from('/profile')
+        ->patch('/profile', [
+            'name' => 'Changed Name',
+            'email' => 'untrusted@example.com',
+        ])
+        ->assertRedirect('/profile')
+        ->assertSessionHasErrors('email');
+
+    expect($user->fresh()->name)->not->toBe('Changed Name')
+        ->and($user->fresh()->email)->toBe('original@example.com');
+})->with(['project_manager', 'employee']);
 
 test('project managers and employees can upload and replace their profile photos', function (string $role) {
     Storage::fake('public');
@@ -50,7 +74,6 @@ test('project managers and employees can upload and replace their profile photos
         ->from('/profile')
         ->patch('/profile', [
             'name' => $user->name,
-            'email' => $user->email,
             'photo' => UploadedFile::fake()->image('profile.png'),
         ])
         ->assertRedirect('/profile')
@@ -70,7 +93,6 @@ test('project managers and employees can upload and replace their profile photos
         ->from('/profile')
         ->patch('/profile', [
             'name' => $user->name,
-            'email' => $user->email,
             'photo' => UploadedFile::fake()->image('replacement.webp'),
         ])
         ->assertRedirect('/profile')
@@ -91,7 +113,6 @@ test('profile photo upload rejects non-image files', function () {
         ->from('/profile')
         ->patch('/profile', [
             'name' => $user->name,
-            'email' => $user->email,
             'photo' => UploadedFile::fake()->create('document.pdf', 100, 'application/pdf'),
         ])
         ->assertRedirect('/profile')
