@@ -11,12 +11,6 @@
             </div>
         @endif
 
-        @if (session('status') === 'verification-link-sent')
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-                Tautan verifikasi baru telah dikirim ke alamat email Anda.
-            </div>
-        @endif
-
         <section class="rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 shadow-sm lg:p-8">
             <div class="max-w-2xl">
                 <header>
@@ -59,28 +53,10 @@
                             autocomplete="username"
                         />
                         <x-input-error :messages="$errors->get('email')" class="mt-2" />
-
-                        @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
-                            <p class="mt-2 text-sm text-slate-700">
-                                {{ __('Alamat email Anda belum terverifikasi.') }}
-                            </p>
-                        @endif
                     </div>
 
                     <x-primary-button>{{ __('Simpan') }}</x-primary-button>
                 </form>
-
-                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
-                    <form method="POST" action="{{ route('verification.send') }}" class="mt-2">
-                        @csrf
-                        <button
-                            type="submit"
-                            class="rounded-md text-sm text-red-600 underline hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                        >
-                            {{ __('Klik di sini untuk mengirim ulang email verifikasi.') }}
-                        </button>
-                    </form>
-                @endif
             </div>
         </section>
 

@@ -32,22 +32,28 @@
                     {{ $project->name }}
                 </h2>
 
+                @php
+                    $isOverdue = $project->isOverdue();
+                @endphp
+
                 <span @class([
                     'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold',
-                    'border-slate-200 bg-slate-100 text-slate-600' => $project->status === 'draft',
-                    'border-blue-200 bg-blue-50 text-blue-700' => $project->status === 'active',
-                    'border-emerald-200 bg-emerald-50 text-emerald-700' => $project->status === 'completed',
-                    'border-red-200 bg-red-50 text-red-700' => $project->status === 'cancelled',
+                    'border-orange-200 bg-orange-50 text-orange-700' => $isOverdue,
+                    'border-slate-200 bg-slate-100 text-slate-600' => ! $isOverdue && $project->status === 'draft',
+                    'border-blue-200 bg-blue-50 text-blue-700' => ! $isOverdue && $project->status === 'active',
+                    'border-emerald-200 bg-emerald-50 text-emerald-700' => ! $isOverdue && $project->status === 'completed',
+                    'border-red-200 bg-red-50 text-red-700' => ! $isOverdue && $project->status === 'cancelled',
                 ])>
                     <span @class([
                         'mr-1.5 h-1.5 w-1.5 rounded-full',
-                        'bg-slate-400' => $project->status === 'draft',
-                        'bg-blue-500' => $project->status === 'active',
-                        'bg-emerald-500' => $project->status === 'completed',
-                        'bg-red-500' => $project->status === 'cancelled',
+                        'bg-orange-500' => $isOverdue,
+                        'bg-slate-400' => ! $isOverdue && $project->status === 'draft',
+                        'bg-blue-500' => ! $isOverdue && $project->status === 'active',
+                        'bg-emerald-500' => ! $isOverdue && $project->status === 'completed',
+                        'bg-red-500' => ! $isOverdue && $project->status === 'cancelled',
                     ])></span>
 
-                    {{ match ($project->status) {
+                    {{ $isOverdue ? 'Lewat tenggat' : match ($project->status) {
                         'draft' => 'Draf',
                         'active' => 'Aktif',
                         'completed' => 'Selesai',

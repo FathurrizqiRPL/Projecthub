@@ -7,7 +7,8 @@ test('login screen can be rendered', function () {
         ->assertOk()
         ->assertViewIs('auth.login')
         ->assertSee('Masuk ke ProjectHub')
-        ->assertSee('name="username"', false);
+        ->assertSee('name="username"', false)
+        ->assertDontSee('Lupa kata sandi?');
 });
 
 test('users can authenticate using the login screen', function () {
@@ -82,4 +83,16 @@ test('users can log out', function () {
         ->assertRedirect(route('login'));
 
     $this->assertGuest();
+});
+
+test('unused Breeze authentication pages are not available', function () {
+    $this->get('/register')->assertNotFound();
+    $this->get('/forgot-password')->assertNotFound();
+    $this->post('/forgot-password')->assertNotFound();
+    $this->get('/reset-password/test-token')->assertNotFound();
+    $this->post('/reset-password/test-token')->assertNotFound();
+    $this->get('/verify-email')->assertNotFound();
+    $this->post('/email/verification-notification')->assertNotFound();
+    $this->get('/confirm-password')->assertNotFound();
+    $this->post('/confirm-password')->assertNotFound();
 });

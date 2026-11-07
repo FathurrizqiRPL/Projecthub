@@ -234,6 +234,10 @@
 
                     @foreach ($recentProjects as $project)
 
+                        @php
+                            $isOverdue = $project->isOverdue();
+                        @endphp
+
                         <a
                             href="{{ route(
                                 'project-manager.projects.show',
@@ -261,20 +265,23 @@
                                         @class([
                                             'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold',
 
+                                            'border-orange-200 bg-orange-50 text-orange-700'
+                                                => $isOverdue,
+
                                             'border-slate-200 bg-slate-100 text-slate-600'
-                                                => $project->status === 'draft',
+                                                => ! $isOverdue && $project->status === 'draft',
 
                                             'border-blue-200 bg-blue-50 text-blue-700'
-                                                => $project->status === 'active',
+                                                => ! $isOverdue && $project->status === 'active',
 
                                             'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                                => $project->status === 'completed',
+                                                => ! $isOverdue && $project->status === 'completed',
 
                                             'border-red-200 bg-red-50 text-red-700'
-                                                => $project->status === 'cancelled',
+                                                => ! $isOverdue && $project->status === 'cancelled',
                                         ])
                                     >
-                                        {{ match ($project->status) {
+                                        {{ $isOverdue ? 'Lewat tenggat' : match ($project->status) {
                                             'draft' => 'Draf',
                                             'active' => 'Aktif',
                                             'completed' => 'Selesai',

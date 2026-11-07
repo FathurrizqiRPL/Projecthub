@@ -53,7 +53,8 @@
         <div class="grid gap-4 xl:grid-cols-2">
             @foreach ($projects as $project)
                 @php
-                    $projectStatusLabel = match ($project->status) {
+                    $isOverdue = $project->isOverdue();
+                    $projectStatusLabel = $isOverdue ? 'Lewat tenggat' : match ($project->status) {
                         'draft' => 'Draf',
                         'active' => 'Berjalan',
                         'completed' => 'Selesai',
@@ -73,10 +74,11 @@
                         </div>
                         <span @class([
                             'rounded-full px-3 py-1 text-xs font-semibold',
-                            'bg-blue-50 text-blue-700' => $project->status === 'active',
-                            'bg-slate-100 text-slate-600' => $project->status === 'draft',
-                            'bg-emerald-50 text-emerald-700' => $project->status === 'completed',
-                            'bg-red-50 text-red-700' => $project->status === 'cancelled',
+                            'bg-orange-50 text-orange-700' => $isOverdue,
+                            'bg-blue-50 text-blue-700' => ! $isOverdue && $project->status === 'active',
+                            'bg-slate-100 text-slate-600' => ! $isOverdue && $project->status === 'draft',
+                            'bg-emerald-50 text-emerald-700' => ! $isOverdue && $project->status === 'completed',
+                            'bg-red-50 text-red-700' => ! $isOverdue && $project->status === 'cancelled',
                         ])>
                             {{ $projectStatusLabel }}
                         </span>

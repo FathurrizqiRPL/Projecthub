@@ -28,6 +28,13 @@ class Project extends Model
         ];
     }
 
+    public function isOverdue(): bool
+    {
+        return $this->status !== 'completed'
+            && $this->deadline !== null
+            && $this->deadline->isBefore(today());
+    }
+
     protected function progress(): Attribute
     {
         return Attribute::make(

@@ -1,0 +1,498 @@
+LANJUTAN JURNAL PEMBUATAN APLIKASI PROJECTHUB
+
+Lanjutan dari langkah 13: Buka Terminal di VS Code
+
+Petunjuk penulisan:
+- Setiap nomor yang menyebut satu file hanya menggunakan satu gambar untuk file tersebut.
+- Ganti placeholder [TEMPELKAN SATU GAMBAR ...] dengan satu screenshot kode.
+- Langkah migration pertama berisi daftar command dalam satu gambar terminal. Setelah itu,
+  setiap file migration dibahas di nomor tersendiri dengan satu gambar.
+- Untuk model, controller, middleware, route, component, dan view, buat file melalui
+  Explorer VS Code pada folder yang tertulis. Jangan gunakan command Artisan untuk membuat
+  model atau controller pada bagian ini.
+- File migration users sudah dibuat oleh Laravel. Edit file yang ada; jangan membuat
+  migration users baru. Migration cache dan jobs juga berasal dari Laravel.
+- Catatan sesuai source akhir: ProjectHub menggunakan Laravel 13 dan autentikasi khusus.
+  Breeze tidak tercantum sebagai dependency pada source akhir. Langkah Breeze di bawah
+  hanya berlaku jika memang dipasang saat proses awal pembuatan aplikasi.
+
+
+14. Membuat File Migration Aplikasi
+
+Buka Terminal VS Code pada folder utama project. Jalankan command berikut satu per satu,
+sesuai urutan:
+
+php artisan make:migration create_projects_table
+php artisan make:migration create_project_stages_table
+php artisan make:migration create_project_members_table
+php artisan make:migration create_tasks_table
+php artisan make:migration create_task_assignees_table
+php artisan make:migration create_subtasks_table
+php artisan make:migration create_subtask_attachments_table
+php artisan make:migration create_revision_items_table
+php artisan make:migration create_project_completion_exceptions_table
+php artisan make:migration create_revision_attachments_table
+
+Laravel akan membuat nama file lengkap dengan timestamp secara otomatis di
+database/migrations. Jalankan command sesuai urutan agar hubungan foreign key dibuat setelah
+tabel yang dirujuk.
+
+[TEMPELKAN SATU GAMBAR daftar command pembuatan migration di Terminal]
+
+
+15. Buka file database/migrations/0001_01_01_000000_create_users_table.php dan isi dengan script di bawah.
+
+Sesuaikan tabel users agar memiliki name, username, email, password, role,
+status, profile_photo, department, skills, phone, joined_at, must_change_password,
+rememberToken, dan timestamps. Pastikan tabel password_reset_tokens dan sessions tetap
+sesuai kebutuhan aplikasi.
+
+[TEMPELKAN SATU GAMBAR isi file 0001_01_01_000000_create_users_table.php]
+
+
+16. Buka file database/migrations/[timestamp]_create_projects_table.php dan isi dengan script di bawah.
+
+Tabel projects memiliki kolom created_by, name, description, start_date, deadline, status,
+dan timestamps.
+Kolom created_by merupakan foreign key ke users. Status awal proyek adalah draft.
+
+[TEMPELKAN SATU GAMBAR isi file create_projects_table.php]
+
+
+17. Buka file database/migrations/[timestamp]_create_project_stages_table.php dan isi dengan script di bawah.
+
+Tabel project_stages memiliki kolom project_id, name, position, completed_at, dan
+timestamps. Tambahkan
+current_stage_id nullable sebagai foreign key pada tabel projects. Pada method down(),
+hapus foreign key current_stage_id sebelum menghapus tabel project_stages.
+
+[TEMPELKAN SATU GAMBAR isi file create_project_stages_table.php]
+
+
+18. Buka file database/migrations/[timestamp]_create_project_members_table.php dan isi dengan script di bawah.
+
+Tabel penghubung project_members memiliki project_id, user_id, timestamps, dan batas unik pasangan
+project_id serta user_id.
+
+[TEMPELKAN SATU GAMBAR isi file create_project_members_table.php]
+
+
+19. Buka file database/migrations/[timestamp]_create_tasks_table.php dan isi dengan script di bawah.
+
+Tabel tasks memiliki project_id, project_stage_id, created_by, title, description, deadline,
+status, review_cycle,
+cancelled_by, cancelled_at, timestamps, serta index yang digunakan aplikasi.
+
+[TEMPELKAN SATU GAMBAR isi file create_tasks_table.php]
+
+
+20. Buka file database/migrations/[timestamp]_create_task_assignees_table.php dan isi dengan script di bawah.
+
+Tabel task_assignees menghubungkan tasks dengan users melalui task_id dan user_id. Tambahkan
+timestamps dan batas unik untuk pasangan task_id serta user_id.
+
+[TEMPELKAN SATU GAMBAR isi file create_task_assignees_table.php]
+
+
+21. Buka file database/migrations/[timestamp]_create_subtasks_table.php dan isi dengan script di bawah.
+
+Tabel subtasks memiliki task_id, created_by, completed_by, title, description, status,
+completion_note,
+completed_at, dan timestamps. Tambahkan index sesuai kebutuhan pencarian status subtugas.
+
+[TEMPELKAN SATU GAMBAR isi file create_subtasks_table.php]
+
+
+22. Buka file database/migrations/[timestamp]_create_subtask_attachments_table.php dan isi dengan script di bawah.
+
+Tabel subtask_attachments memiliki subtask_id, uploaded_by, original_name, file_path, mime_type,
+file_size, dan timestamps.
+
+[TEMPELKAN SATU GAMBAR isi file create_subtask_attachments_table.php]
+
+
+23. Buka file database/migrations/[timestamp]_create_revision_items_table.php dan isi dengan script di bawah.
+
+Tabel revision_items memiliki task_id, cycle, created_by, note, completion_note, status,
+resolved_by,
+resolved_at, dan timestamps. Tambahkan index untuk task_id, cycle, dan status.
+
+[TEMPELKAN SATU GAMBAR isi file create_revision_items_table.php]
+
+
+24. Buka file database/migrations/[timestamp]_create_project_completion_exceptions_table.php dan isi dengan script di bawah.
+
+Tabel project_completion_exceptions memiliki project_id, task_id nullable, waived_by,
+stage_name, task_title, task_status, reason, timestamps, serta batas unik project_id dan
+task_id.
+
+[TEMPELKAN SATU GAMBAR isi file create_project_completion_exceptions_table.php]
+
+
+25. Buka file database/migrations/[timestamp]_create_revision_attachments_table.php dan isi dengan script di bawah.
+
+Tabel revision_attachments memiliki revision_item_id, uploaded_by, original_name, file_path,
+mime_type, file_size, dan timestamps.
+
+[TEMPELKAN SATU GAMBAR isi file create_revision_attachments_table.php]
+
+
+26. Menjalankan Migration
+
+Setelah semua migration selesai diisi, jalankan perintah berikut:
+
+php artisan migrate
+
+Pastikan seluruh migration berhasil dijalankan. Jika terjadi error foreign key, periksa
+urutan timestamp dan nama tabel yang dirujuk.
+
+[TEMPELKAN SATU GAMBAR hasil perintah php artisan migrate]
+
+
+27. Menginstal Laravel Breeze (Hanya Jika Digunakan pada Proses Awal)
+
+Jika proses awal pembuatan aplikasi memang menggunakan Breeze, jalankan command berikut:
+
+composer require laravel/breeze --dev
+php artisan breeze:install
+npm install
+
+Pilih Blade jika installer meminta pilihan stack. Breeze menyediakan scaffold autentikasi
+awal yang dapat disesuaikan.
+
+Catatan: source akhir ProjectHub tidak menggunakan Breeze. Autentikasi akhirnya memakai
+AuthController, routes/auth.php, dan halaman login khusus. Jika jurnal menjelaskan source
+akhir, jelaskan bahwa autentikasi disesuaikan sendiri; jangan menyebut Breeze sebagai
+dependency yang masih dipakai.
+
+[TEMPELKAN SATU GAMBAR proses instalasi Breeze jika memang dilakukan]
+
+
+28. Buat file app/Models/User.php dan isi dengan script di bawah.
+
+Model User memuat atribut yang dapat diisi, atribut tersembunyi, casts password, dan relasi
+ke proyek.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/User.php]
+
+
+29. Buat file app/Models/Project.php dan isi dengan script di bawah.
+
+Model Project memuat casts tanggal serta relasi ke creator, stages, currentStage, members,
+tasks, dan completionExceptions.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/Project.php]
+
+
+30. Buat file app/Models/ProjectStage.php dan isi dengan script di bawah.
+
+Model ProjectStage memuat casts completed_at serta relasi ke project dan tasks.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/ProjectStage.php]
+
+
+31. Buat file app/Models/Task.php dan isi dengan script di bawah.
+
+Model Task memuat casts deadline, review_cycle, cancelled_at, serta relasi ke project,
+stage, assignees, subtasks,
+revisionItems, completionException, creator, dan canceller.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/Task.php]
+
+
+32. Buat file app/Models/Subtask.php dan isi dengan script di bawah.
+
+Model Subtask memuat casts completed_at serta relasi ke task, creator, attachments, dan
+completer.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/Subtask.php]
+
+
+33. Buat file app/Models/SubtaskAttachment.php dan isi dengan script di bawah.
+
+Model SubtaskAttachment memiliki relasi ke subtask serta pengguna yang mengunggah lampiran.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/SubtaskAttachment.php]
+
+
+34. Buat file app/Models/RevisionItem.php dan isi dengan script di bawah.
+
+Model RevisionItem memuat casts cycle dan resolved_at, serta relasi ke task, creator,
+resolver, dan
+attachments.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/RevisionItem.php]
+
+
+35. Buat file app/Models/RevisionAttachment.php dan isi dengan script di bawah.
+
+Model RevisionAttachment memiliki relasi ke revision item serta pengguna pengunggah.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/RevisionAttachment.php]
+
+
+36. Buat file app/Models/ProjectCompletionException.php dan isi dengan script di bawah.
+
+Model ProjectCompletionException memiliki relasi ke project, task, serta pengguna yang memberi
+pengecualian.
+
+[TEMPELKAN SATU GAMBAR isi file app/Models/ProjectCompletionException.php]
+
+
+37. Buat file app/Http/Controllers/Auth/AuthController.php dan isi dengan script di bawah.
+
+Jika belum tersedia, buat folder Auth di dalam app/Http/Controllers. Controller ini menangani
+login, autentikasi, penggantian password, dan logout.
+
+[TEMPELKAN SATU GAMBAR isi file app/Http/Controllers/Auth/AuthController.php]
+
+
+38. Buat file app/Http/Controllers/AdminController.php dan isi dengan script di bawah.
+
+Controller ini menangani dashboard admin dan pengelolaan akun pengguna.
+
+[TEMPELKAN SATU GAMBAR isi file app/Http/Controllers/AdminController.php]
+
+
+39. Buat file app/Http/Controllers/PMController.php dan isi dengan script di bawah.
+
+Controller ini menangani dashboard, proyek, workflow, anggota proyek, tugas, review, dan
+laporan Project Manager.
+
+[TEMPELKAN SATU GAMBAR isi file app/Http/Controllers/PMController.php]
+
+
+40. Buat file app/Http/Controllers/KaryawanController.php dan isi dengan script di bawah.
+
+Controller ini menangani proyek dan tugas karyawan, subtugas, lampiran, dan pengajuan tugas
+untuk review.
+
+[TEMPELKAN SATU GAMBAR isi file app/Http/Controllers/KaryawanController.php]
+
+
+41. Buat file app/Http/Controllers/ProfileController.php dan isi dengan script di bawah.
+
+Controller ini menangani tampilan dan perubahan profil, password, serta pengaturan akun pengguna.
+
+[TEMPELKAN SATU GAMBAR isi file app/Http/Controllers/ProfileController.php]
+
+
+42. Buat file app/Http/Middleware/RoleMiddleware.php dan isi dengan script di bawah.
+
+Middleware ini memeriksa role pengguna sebelum mengakses halaman tertentu.
+
+[TEMPELKAN SATU GAMBAR isi file app/Http/Middleware/RoleMiddleware.php]
+
+
+43. Buat file app/Http/Middleware/EnsurePasswordIsChanged.php dan isi dengan script di bawah.
+
+Middleware ini mengarahkan pengguna yang masih wajib mengganti password.
+
+[TEMPELKAN SATU GAMBAR isi file app/Http/Middleware/EnsurePasswordIsChanged.php]
+
+
+44. Buka file bootstrap/app.php dan tambahkan alias middleware seperti script di bawah.
+
+Alias role dan password.changed membuat middleware dapat digunakan pada route.
+
+[TEMPELKAN SATU GAMBAR bagian alias middleware di bootstrap/app.php]
+
+
+45. Buat file database/seeders/AdminSeeder.php dan isi dengan script di bawah.
+
+Seeder ini membuat akun admin awal. Untuk keamanan, gunakan password awal hanya untuk pengembangan dan
+wajibkan penggantian password saat login pertama.
+
+[TEMPELKAN SATU GAMBAR isi file database/seeders/AdminSeeder.php]
+
+
+46. Buka file database/seeders/DatabaseSeeder.php dan isi dengan script di bawah.
+
+Panggil AdminSeeder agar akun admin awal dibuat ketika seeder dijalankan.
+
+[TEMPELKAN SATU GAMBAR isi file database/seeders/DatabaseSeeder.php]
+
+
+47. Menjalankan Seeder
+
+Jalankan seeder dari Terminal:
+
+php artisan db:seed
+
+[TEMPELKAN SATU GAMBAR hasil perintah php artisan db:seed]
+
+
+48. Buka file routes/web.php dan isi dengan script di bawah.
+
+Route ini mencakup halaman utama, dashboard, admin, project manager, employee, dan profile.
+Pasang middleware auth, role, serta password.changed sesuai akses masing-masing.
+
+[TEMPELKAN SATU GAMBAR isi file routes/web.php]
+
+
+49. Buka file routes/auth.php dan isi dengan script di bawah.
+
+Route ini menangani login, logout, dan penggantian password.
+
+[TEMPELKAN SATU GAMBAR isi file routes/auth.php]
+
+
+50. Buat file app/View/Components/AppLayout.php dan isi dengan script di bawah.
+
+Class component ini menyediakan layout aplikasi untuk digunakan oleh view.
+
+[TEMPELKAN SATU GAMBAR isi file app/View/Components/AppLayout.php]
+
+
+51. Buat file app/View/Components/GuestLayout.php dan isi dengan script di bawah.
+
+Class component ini menyediakan layout halaman guest atau autentikasi.
+
+[TEMPELKAN SATU GAMBAR isi file app/View/Components/GuestLayout.php]
+
+
+52. Membuat Tampilan Layout
+
+Buat dan isi file-file layout di dalam folder resources/views/layouts. Layout digunakan sebagai
+kerangka halaman untuk setiap role dan halaman guest.
+
+resources/views/layouts/
+  admin.blade.php
+  app.blade.php
+  employee.blade.php
+  guest.blade.php
+  project-manager.blade.php
+
+[TEMPELKAN SATU GAMBAR struktur folder resources/views/layouts]
+
+
+53. Membuat Blade Components
+
+Buat dan isi component Blade yang digunakan kembali di berbagai halaman. Simpan file-file
+berikut di dalam folder resources/views/components.
+
+resources/views/components/
+  action-message.blade.php
+  application-logo.blade.php
+  auth-session-status.blade.php
+  danger-button.blade.php
+  dropdown-link.blade.php
+  dropdown.blade.php
+  input-error.blade.php
+  input-label.blade.php
+  modal.blade.php
+  nav-link.blade.php
+  primary-button.blade.php
+  responsive-nav-link.blade.php
+  secondary-button.blade.php
+  text-input.blade.php
+
+[TEMPELKAN SATU GAMBAR struktur folder resources/views/components]
+
+
+54. Membuat Tampilan Admin
+
+Buat dan isi tampilan admin di dalam folder resources/views/admin. Folder users berisi
+halaman pengelolaan akun pengguna.
+
+resources/views/admin/
+  dashboard.blade.php
+  users/
+    create.blade.php
+    edit.blade.php
+    index.blade.php
+    show.blade.php
+
+[TEMPELKAN SATU GAMBAR struktur folder resources/views/admin]
+
+
+55. Membuat Tampilan Project Manager
+
+Buat dan isi tampilan Project Manager di dalam folder resources/views/project-manager.
+Tampilan dikelompokkan ke dalam folder projects, tasks, dan reports.
+
+resources/views/project-manager/
+  dashboard.blade.php
+  projects/
+    create.blade.php
+    edit.blade.php
+    index.blade.php
+    members.blade.php
+    show.blade.php
+    workflow.blade.php
+    partials/
+      form.blade.php
+  reports/
+    projects.blade.php
+  tasks/
+    all.blade.php
+    create.blade.php
+    edit.blade.php
+    index.blade.php
+    show.blade.php
+
+[TEMPELKAN SATU GAMBAR struktur folder resources/views/project-manager]
+
+
+56. Membuat Tampilan Employee
+
+Buat dan isi tampilan Employee di dalam folder resources/views/employee. Folder projects
+berisi halaman proyek yang melibatkan Employee, sedangkan folder tasks berisi halaman tugas.
+
+resources/views/employee/
+  projects/
+    index.blade.php
+    show.blade.php
+  tasks/
+    index.blade.php
+    show.blade.php
+
+[TEMPELKAN SATU GAMBAR struktur folder resources/views/employee]
+
+
+57. Membuat Tampilan Autentikasi dan Profil
+
+Buat dan isi tampilan login serta penggantian password di folder resources/views/auth.
+Buat juga tampilan profil di resources/views/profile.blade.php.
+
+resources/views/
+  auth/
+    change-password.blade.php
+    login.blade.php
+  profile.blade.php
+
+[TEMPELKAN SATU GAMBAR struktur file tampilan autentikasi dan profil]
+
+
+58. Memeriksa Route
+
+Jalankan perintah berikut untuk melihat route yang terdaftar:
+
+php artisan route:list
+
+[TEMPELKAN SATU GAMBAR hasil perintah php artisan route:list]
+
+
+59. Build Asset Frontend
+
+Sebelum menjalankan aplikasi, buat asset frontend untuk digunakan oleh website:
+
+npm run build
+
+Pastikan proses build selesai tanpa error agar CSS dan JavaScript tersedia di public/build.
+Jika dependency frontend belum terpasang, jalankan npm install terlebih dahulu.
+
+[TEMPELKAN SATU GAMBAR hasil perintah npm run build]
+
+
+60. Menjalankan Aplikasi
+
+Jalankan server Laravel dari Terminal:
+
+php artisan serve
+
+Buka alamat lokal yang ditampilkan Terminal pada browser. Asset yang telah di-build akan
+digunakan oleh website. Coba login dan pastikan halaman tampil sesuai role admin,
+project_manager, atau employee.
+
+[TEMPELKAN SATU GAMBAR aplikasi yang berjalan setelah php artisan serve]

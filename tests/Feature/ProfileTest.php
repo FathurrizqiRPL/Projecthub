@@ -10,7 +10,9 @@ test('profile page is displayed', function () {
         ->assertOk()
         ->assertViewIs('profile')
         ->assertSee('Informasi Profil')
-        ->assertSee('Perbarui kata sandi');
+        ->assertSee('Perbarui kata sandi')
+        ->assertDontSee('Alamat email Anda belum terverifikasi.')
+        ->assertDontSee('verifikasi email');
 });
 
 test('profile information can be updated', function () {
@@ -28,21 +30,7 @@ test('profile information can be updated', function () {
     $user->refresh();
 
     expect($user->name)->toBe('Test User')
-        ->and($user->email)->toBe('test@example.com')
-        ->and($user->email_verified_at)->toBeNull();
-});
-
-test('email verification status is unchanged when the email address is unchanged', function () {
-    $user = User::factory()->create(['must_change_password' => false]);
-
-    $this->actingAs($user)
-        ->from('/profile')
-        ->patch('/profile', [
-            'name' => 'Updated Name',
-            'email' => $user->email,
-        ]);
-
-    expect($user->refresh()->email_verified_at)->not->toBeNull();
+        ->and($user->email)->toBe('test@example.com');
 });
 
 test('an administrator can delete their account', function () {

@@ -50,6 +50,10 @@
 
         @forelse ($projects as $project)
 
+            @php
+                $isOverdue = $project->isOverdue();
+            @endphp
+
             <div
                 class="flex flex-col gap-4 border-b
                        border-slate-100 p-5 last:border-0
@@ -78,38 +82,44 @@
                             @class([
                                 'inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold',
 
+                                'border-orange-200 bg-orange-50 text-orange-700'
+                                    => $isOverdue,
+
                                 'border-slate-200 bg-slate-100 text-slate-600'
-                                    => $project->status === 'draft',
+                                    => ! $isOverdue && $project->status === 'draft',
 
                                 'border-blue-200 bg-blue-50 text-blue-700'
-                                    => $project->status === 'active',
+                                    => ! $isOverdue && $project->status === 'active',
 
                                 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                    => $project->status === 'completed',
+                                    => ! $isOverdue && $project->status === 'completed',
 
                                 'border-red-200 bg-red-50 text-red-700'
-                                    => $project->status === 'cancelled',
+                                    => ! $isOverdue && $project->status === 'cancelled',
                             ])
                         >
                             <span
                                 @class([
                                     'mr-1.5 h-1.5 w-1.5 rounded-full',
 
+                                    'bg-orange-500'
+                                        => $isOverdue,
+
                                     'bg-slate-400'
-                                        => $project->status === 'draft',
+                                        => ! $isOverdue && $project->status === 'draft',
 
                                     'bg-blue-500'
-                                        => $project->status === 'active',
+                                        => ! $isOverdue && $project->status === 'active',
 
                                     'bg-emerald-500'
-                                        => $project->status === 'completed',
+                                        => ! $isOverdue && $project->status === 'completed',
 
                                     'bg-red-500'
-                                        => $project->status === 'cancelled',
+                                        => ! $isOverdue && $project->status === 'cancelled',
                                 ])
                             ></span>
 
-                            {{ match ($project->status) {
+                            {{ $isOverdue ? 'Lewat tenggat' : match ($project->status) {
                                 'draft' => 'Draf',
                                 'active' => 'Aktif',
                                 'completed' => 'Selesai',

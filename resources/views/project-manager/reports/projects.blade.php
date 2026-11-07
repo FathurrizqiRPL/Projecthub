@@ -177,7 +177,7 @@
                 @forelse ($projects as $reportProject)
                     @php
                         $project = $reportProject['project'];
-                        $statusLabel = match ($project->status) {
+                        $statusLabel = $project->isOverdue() ? 'Lewat tenggat' : match ($project->status) {
                             'draft' => 'Draf',
                             'active' => 'Berjalan',
                             'completed' => 'Selesai',

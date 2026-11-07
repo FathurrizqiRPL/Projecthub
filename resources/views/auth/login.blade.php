@@ -15,11 +15,6 @@
         </p>
         </div>
 
-    <x-auth-session-status
-        class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3"
-        :status="session('status')"
-    />
-
     <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
         @csrf
 
@@ -71,12 +66,5 @@
         >
             Masuk
         </button>
-
-        <a
-            href="{{ route('password.request') }}"
-            class="block text-center text-sm font-semibold text-slate-600 transition hover:text-red-600"
-        >
-            Lupa kata sandi?
-        </a>
     </form>
 @endsection

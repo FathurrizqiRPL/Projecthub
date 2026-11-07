@@ -97,6 +97,65 @@ it('lists only projects where the employee has an assigned task', function () {
         ->assertSee(route('employee.projects.show', $project), false);
 });
 
+it('marks projects past their deadline as overdue unless completed', function () {
+    [
+        'employee' => $employee,
+        'manager' => $manager,
+        'project' => $project,
+    ] = createEmployeeProjectContext();
+
+    $this->travelTo(now()->startOfDay());
+
+    $project->update(['deadline' => today()->subDay()]);
+
+    expect($project->fresh()->isOverdue())->toBeTrue();
+
+    $this->actingAs($employee)
+        ->get(route('employee.projects.index'))
+        ->assertOk()
+        ->assertSee('Lewat tenggat')
+        ->assertSee('bg-orange-50 text-orange-700', false);
+
+    expect($project->fresh()->status)->toBe('active');
+
+    $this->actingAs($manager)
+        ->get(route('project-manager.projects.index'))
+        ->assertOk()
+        ->assertSee('Lewat tenggat')
+        ->assertSee('border-orange-200 bg-orange-50 text-orange-700', false);
+
+    $this->actingAs($manager)
+        ->get(route('project-manager.projects.show', $project))
+        ->assertOk()
+        ->assertSee('Lewat tenggat')
+        ->assertSee('border-orange-200 bg-orange-50 text-orange-700', false);
+
+    $project->update(['deadline' => today()]);
+
+    expect($project->fresh()->isOverdue())->toBeFalse();
+
+    $project->update([
+        'deadline' => today()->subDay(),
+        'status' => 'completed',
+    ]);
+
+    expect($project->fresh()->isOverdue())->toBeFalse();
+
+    $this->actingAs($employee)
+        ->get(route('employee.projects.index'))
+        ->assertOk()
+        ->assertSee('Selesai')
+        ->assertDontSee('Lewat tenggat')
+        ->assertDontSee('bg-orange-50 text-orange-700', false);
+
+    $this->actingAs($manager)
+        ->get(route('project-manager.projects.index'))
+        ->assertOk()
+        ->assertSee('Selesai')
+        ->assertDontSee('Lewat tenggat')
+        ->assertDontSee('border-orange-200 bg-orange-50 text-orange-700', false);
+});
+
 it('searches assigned projects by name or description without exposing other projects', function () {
     [
         'employee' => $employee,
