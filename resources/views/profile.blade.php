@@ -22,9 +22,36 @@
                     </p>
                 </header>
 
-                <form method="POST" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
                     @csrf
                     @method('PATCH')
+
+                    <div class="flex items-center gap-4">
+                        @if (auth()->user()->profile_photo)
+                            <img
+                                src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url(auth()->user()->profile_photo) }}"
+                                alt="Foto profil {{ auth()->user()->name }}"
+                                class="h-20 w-20 rounded-full border border-slate-200 object-cover"
+                            >
+                        @else
+                            <div class="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-2xl font-semibold text-red-600">
+                                {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+
+                        <div>
+                            <x-input-label for="photo" :value="__('Foto profil')" />
+                            <input
+                                id="photo"
+                                name="photo"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                class="mt-1 block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-red-50 file:px-4 file:py-2 file:font-semibold file:text-red-700 hover:file:bg-red-100"
+                            >
+                            <p class="mt-1 text-xs text-slate-500">Format JPG, PNG, atau WEBP; ukuran maksimal 2 MB.</p>
+                            <x-input-error :messages="$errors->get('photo')" class="mt-2" />
+                        </div>
+                    </div>
 
                     <div>
                         <x-input-label for="name" :value="__('Nama')" />

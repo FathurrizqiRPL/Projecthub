@@ -157,8 +157,9 @@ composer require laravel/breeze --dev
 php artisan breeze:install
 npm install
 
-Pilih Blade jika installer meminta pilihan stack. Breeze menyediakan scaffold autentikasi
-awal yang dapat disesuaikan.
+Saat installer menanyakan stack, pilih Blade. Setelah itu tekan Enter untuk menerima
+pilihan default pada pertanyaan berikutnya; framework pengujian default-nya adalah Pest.
+Breeze menyediakan scaffold autentikasi awal yang dapat disesuaikan.
 
 Catatan: source akhir ProjectHub tidak menggunakan Breeze. Autentikasi akhirnya memakai
 AuthController, routes/auth.php, dan halaman login khusus. Jika jurnal menjelaskan source
@@ -351,7 +352,23 @@ Class component ini menyediakan layout halaman guest atau autentikasi.
 [TEMPELKAN SATU GAMBAR isi file app/View/Components/GuestLayout.php]
 
 
-52. Membuat Tampilan Layout
+52. Buka file resources/views/dashboard.blade.php dan isi dengan script di bawah.
+
+File dashboard ini berada langsung di folder resources/views, terpisah dari folder tampilan
+berdasarkan role.
+
+[TEMPELKAN SATU GAMBAR kode resources/views/dashboard.blade.php]
+
+
+53. Buka file resources/views/profile.blade.php dan isi dengan script di bawah.
+
+File profile ini berada langsung di folder resources/views, terpisah dari folder tampilan
+berdasarkan role.
+
+[TEMPELKAN SATU GAMBAR kode resources/views/profile.blade.php]
+
+
+54. Membuat Tampilan Layout
 
 Buat dan isi file-file layout di dalam folder resources/views/layouts. Layout digunakan sebagai
 kerangka halaman untuk setiap role dan halaman guest.
@@ -366,7 +383,7 @@ resources/views/layouts/
 [TEMPELKAN SATU GAMBAR struktur folder resources/views/layouts]
 
 
-53. Membuat Blade Components
+55. Membuat Blade Components
 
 Buat dan isi component Blade yang digunakan kembali di berbagai halaman. Simpan file-file
 berikut di dalam folder resources/views/components.
@@ -390,7 +407,7 @@ resources/views/components/
 [TEMPELKAN SATU GAMBAR struktur folder resources/views/components]
 
 
-54. Membuat Tampilan Admin
+56. Membuat Tampilan Admin
 
 Buat dan isi tampilan admin di dalam folder resources/views/admin. Folder users berisi
 halaman pengelolaan akun pengguna.
@@ -406,7 +423,7 @@ resources/views/admin/
 [TEMPELKAN SATU GAMBAR struktur folder resources/views/admin]
 
 
-55. Membuat Tampilan Project Manager
+57. Membuat Tampilan Project Manager
 
 Buat dan isi tampilan Project Manager di dalam folder resources/views/project-manager.
 Tampilan dikelompokkan ke dalam folder projects, tasks, dan reports.
@@ -434,7 +451,7 @@ resources/views/project-manager/
 [TEMPELKAN SATU GAMBAR struktur folder resources/views/project-manager]
 
 
-56. Membuat Tampilan Employee
+58. Membuat Tampilan Employee
 
 Buat dan isi tampilan Employee di dalam folder resources/views/employee. Folder projects
 berisi halaman proyek yang melibatkan Employee, sedangkan folder tasks berisi halaman tugas.
@@ -450,21 +467,17 @@ resources/views/employee/
 [TEMPELKAN SATU GAMBAR struktur folder resources/views/employee]
 
 
-57. Membuat Tampilan Autentikasi dan Profil
+59. Membuat Tampilan Autentikasi
 
 Buat dan isi tampilan login serta penggantian password di folder resources/views/auth.
-Buat juga tampilan profil di resources/views/profile.blade.php.
+resources/views/auth/
+  change-password.blade.php
+  login.blade.php
 
-resources/views/
-  auth/
-    change-password.blade.php
-    login.blade.php
-  profile.blade.php
-
-[TEMPELKAN SATU GAMBAR struktur file tampilan autentikasi dan profil]
+[TEMPELKAN SATU GAMBAR struktur folder resources/views/auth]
 
 
-58. Memeriksa Route
+60. Memeriksa Route
 
 Jalankan perintah berikut untuk melihat route yang terdaftar:
 
@@ -473,7 +486,19 @@ php artisan route:list
 [TEMPELKAN SATU GAMBAR hasil perintah php artisan route:list]
 
 
-59. Build Asset Frontend
+61. Membuat Tautan Penyimpanan Foto
+
+Agar foto profil yang disimpan pada storage dapat ditampilkan melalui browser, jalankan
+perintah berikut satu kali:
+
+php artisan storage:link
+
+Perintah ini membuat tautan dari public/storage ke penyimpanan file public Laravel.
+
+[TEMPELKAN SATU GAMBAR hasil perintah php artisan storage:link]
+
+
+62. Build Asset Frontend
 
 Sebelum menjalankan aplikasi, buat asset frontend untuk digunakan oleh website:
 
@@ -485,7 +510,7 @@ Jika dependency frontend belum terpasang, jalankan npm install terlebih dahulu.
 [TEMPELKAN SATU GAMBAR hasil perintah npm run build]
 
 
-60. Menjalankan Aplikasi
+63. Menjalankan Aplikasi
 
 Jalankan server Laravel dari Terminal:
 

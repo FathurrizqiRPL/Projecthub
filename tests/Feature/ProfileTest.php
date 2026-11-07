@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 test('profile page is displayed', function () {
     $user = User::factory()->create(['must_change_password' => false]);
@@ -10,6 +12,9 @@ test('profile page is displayed', function () {
         ->assertOk()
         ->assertViewIs('profile')
         ->assertSee('Informasi Profil')
+        ->assertSee('Foto profil')
+        ->assertSee('name="photo"', false)
+        ->assertSee('enctype="multipart/form-data"', false)
         ->assertSee('Perbarui kata sandi')
         ->assertDontSee('Alamat email Anda belum terverifikasi.')
         ->assertDontSee('verifikasi email');
@@ -31,6 +36,69 @@ test('profile information can be updated', function () {
 
     expect($user->name)->toBe('Test User')
         ->and($user->email)->toBe('test@example.com');
+});
+
+test('project managers and employees can upload and replace their profile photos', function (string $role) {
+    Storage::fake('public');
+
+    $user = User::factory()->create([
+        'role' => $role,
+        'must_change_password' => false,
+    ]);
+
+    $this->actingAs($user)
+        ->from('/profile')
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'photo' => UploadedFile::fake()->image('profile.png'),
+        ])
+        ->assertRedirect('/profile')
+        ->assertSessionHas('status', 'profile-updated');
+
+    $firstPhotoPath = $user->fresh()->profile_photo;
+
+    expect($firstPhotoPath)->toStartWith('profile-photos/');
+    Storage::disk('public')->assertExists($firstPhotoPath);
+
+    $this->actingAs($user)
+        ->get('/profile')
+        ->assertOk()
+        ->assertSee(Storage::disk('public')->url($firstPhotoPath), false);
+
+    $this->actingAs($user)
+        ->from('/profile')
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'photo' => UploadedFile::fake()->image('replacement.webp'),
+        ])
+        ->assertRedirect('/profile')
+        ->assertSessionHas('status', 'profile-updated');
+
+    $replacementPhotoPath = $user->fresh()->profile_photo;
+
+    expect($replacementPhotoPath)->not->toBe($firstPhotoPath);
+    Storage::disk('public')->assertMissing($firstPhotoPath);
+    Storage::disk('public')->assertExists($replacementPhotoPath);
+})->with(['project_manager', 'employee']);
+
+test('profile photo upload rejects non-image files', function () {
+    Storage::fake('public');
+    $user = User::factory()->create(['must_change_password' => false]);
+
+    $this->actingAs($user)
+        ->from('/profile')
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'photo' => UploadedFile::fake()->create('document.pdf', 100, 'application/pdf'),
+        ])
+        ->assertRedirect('/profile')
+        ->assertSessionHasErrors('photo');
+
+    expect($user->fresh()->profile_photo)->toBeNull();
+    expect(Storage::disk('public')->allFiles('profile-photos'))->toBeEmpty();
 });
 
 test('an administrator can delete their account', function () {
