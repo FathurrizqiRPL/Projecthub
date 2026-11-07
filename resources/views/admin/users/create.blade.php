@@ -8,7 +8,6 @@
     <div class="mb-6">
         <a
             href="{{ route('admin.users.index') }}"
-            wire:navigate
             class="text-sm font-medium text-slate-500
                    transition hover:text-red-600"
         >
@@ -262,7 +261,6 @@
             >
                 <a
                     href="{{ route('admin.users.index') }}"
-                    wire:navigate
                     class="rounded-xl border border-slate-300
                            px-5 py-2.5 text-sm font-semibold
                            text-slate-600 transition

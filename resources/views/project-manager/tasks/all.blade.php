@@ -109,7 +109,6 @@
                             @endif
                             <a
                                 href="{{ route('project-manager.projects.tasks.index', $project) }}"
-                                wire:navigate
                                 class="shrink-0 rounded-xl bg-slate-900 px-4 py-2.5 text-center text-xs font-semibold text-white transition hover:bg-slate-800"
                             >
                                 Lihat tugas proyek

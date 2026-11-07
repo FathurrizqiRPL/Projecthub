@@ -25,7 +25,7 @@
                 <div class="absolute bottom-0 right-0 rounded-full h-72 w-72 bg-red-50 blur-3xl"></div>
 
                 <div class="relative z-10">
-                    <a href="/" wire:navigate class="inline-flex items-center gap-3">
+                    <a href="/" class="inline-flex items-center gap-3">
                         <x-application-logo class="h-11 w-11" />
 
                         <div>
@@ -65,7 +65,7 @@
 
                     {{-- Mobile Brand --}}
                     <div class="flex justify-center mb-8 lg:hidden">
-                        <a href="/" wire:navigate class="flex items-center gap-3">
+                        <a href="/" class="flex items-center gap-3">
                             <x-application-logo class="w-10 h-10" />
 
                             <div>
@@ -80,7 +80,7 @@
                     </div>
 
                     <div class="rounded-3xl border border-slate-200/70 bg-[#fffdfa] p-6 shadow-[0_20px_60px_-25px_rgba(15,23,42,0.18)] sm:p-8">
-                        {{ $slot }}
+                        @yield('content')
                     </div>
 
                     <p class="mt-6 text-xs text-center text-slate-400">

@@ -37,9 +37,41 @@ class AdminController extends Controller
     /**
      * Tampilkan halaman User Management.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        return view('admin.users.index');
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'role' => ['nullable', Rule::in(['admin', 'project_manager', 'employee'])],
+            'status' => ['nullable', Rule::in(['active', 'inactive'])],
+        ]);
+        $search = $validated['search'] ?? '';
+
+        $users = User::query()
+            ->when($search, function ($query) use ($search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query
+                        ->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('username', 'like', '%'.$search.'%')
+                        ->orWhere('email', 'like', '%'.$search.'%');
+                });
+            })
+            ->when($validated['role'] ?? null, function ($query, string $role): void {
+                $query->where('role', $role);
+            })
+            ->when($validated['status'] ?? null, function ($query, string $status): void {
+                $query->where('status', $status);
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.users.index', [
+            'users' => $users,
+            'filters' => [
+                'search' => $search,
+                'role' => $validated['role'] ?? '',
+                'status' => $validated['status'] ?? '',
+            ],
+        ]);
     }
 
     /**
@@ -215,42 +247,42 @@ class AdminController extends Controller
                     'users',
                     'email'
                 )->ignore($user->id),
-                ],
+            ],
             'role' => [
                 'required',
                 Rule::in($allowedRoles),
-                ],
+            ],
             'department' => [
                 'nullable',
                 'string',
                 'max:255',
-                ],
+            ],
             'skills' => [
                 'nullable',
                 'string',
                 'max:1000',
-                ],
+            ],
             'phone' => [
                 'nullable',
                 'string',
                 'max:30',
-                ],
+            ],
             'joined_at' => [
                 'nullable',
                 'date',
-                ],
+            ],
         ], [
-                'name.required' => 'Nama lengkap wajib diisi.',
+            'name.required' => 'Nama lengkap wajib diisi.',
 
-                'username.required' => 'Username wajib diisi.',
-                'username.regex' => 'Username hanya boleh berisi huruf, angka, titik, tanda hubung, dan garis bawah.',
-                'username.unique' => 'Username sudah digunakan.',
+            'username.required' => 'Username wajib diisi.',
+            'username.regex' => 'Username hanya boleh berisi huruf, angka, titik, tanda hubung, dan garis bawah.',
+            'username.unique' => 'Username sudah digunakan.',
 
-                'email.email' => 'Format email tidak valid.',
-                'email.unique' => 'Email sudah digunakan.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah digunakan.',
 
-                'role.required' => 'Role wajib dipilih.',
-            ]);
+            'role.required' => 'Role wajib dipilih.',
+        ]);
 
         $user->update([
             'name' => $validated['name'],

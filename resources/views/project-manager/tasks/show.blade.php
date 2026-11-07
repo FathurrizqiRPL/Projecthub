@@ -26,7 +26,6 @@
 
 <div class="space-y-6">
     <a href="{{ route('project-manager.projects.tasks.index', ['project' => $project, 'stage' => $task->project_stage_id]) }}"
-        wire:navigate
         class="inline-flex items-center gap-2 text-sm font-semibold transition text-slate-500 hover:text-red-600">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
@@ -115,7 +114,6 @@
 
             @if ($canEditTask)
                 <a href="{{ route('project-manager.projects.tasks.edit', [$project, $task]) }}"
-                    wire:navigate
                     class="inline-flex shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50">
                     Edit tugas
                 </a>

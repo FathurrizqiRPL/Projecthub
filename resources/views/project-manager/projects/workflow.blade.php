@@ -12,7 +12,6 @@
             'project-manager.projects.show',
             $project
         ) }}"
-        wire:navigate
         class="inline-flex items-center gap-2
                text-sm font-semibold text-slate-500
                transition hover:text-red-600"
@@ -194,7 +193,6 @@
                         'project-manager.projects.show',
                         $project
                     ) }}"
-                    wire:navigate
                     class="rounded-xl border
                            border-slate-200 px-4 py-2.5
                            text-sm font-semibold text-slate-600"

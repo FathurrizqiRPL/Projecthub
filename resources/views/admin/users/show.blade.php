@@ -157,7 +157,6 @@
     >
         <a
             href="{{ route('admin.users.index') }}"
-            wire:navigate
             class="text-sm font-medium text-slate-500
                    transition hover:text-red-600"
         >
@@ -166,7 +165,6 @@
 
         <a
             href="{{ route('admin.users.edit', $user) }}"
-            wire:navigate
             class="rounded-xl bg-red-600 px-4 py-2.5
                    text-sm font-semibold text-white
                    transition hover:bg-red-700"

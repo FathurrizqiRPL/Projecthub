@@ -132,7 +132,6 @@
 
                 <a
                     href="{{ route('admin.users.index') }}"
-                    wire:navigate
                     class="text-sm font-semibold text-red-600
                            transition shrink-0 hover:text-red-700"
                 >
@@ -229,7 +228,6 @@
 
                 <a
                     href="{{ route('admin.users.create') }}"
-                    wire:navigate
                     class="block w-full rounded-xl
                            bg-red-600 px-4 py-2.5
                            text-center text-sm font-semibold
@@ -240,7 +238,6 @@
 
                 <a
                     href="{{ route('admin.users.index') }}"
-                    wire:navigate
                     class="block w-full rounded-xl
                            border border-slate-300
                            px-4 py-2.5 text-center

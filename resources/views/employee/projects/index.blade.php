@@ -30,7 +30,7 @@
                     Cari proyek
                 </button>
                 @if ($search !== '')
-                    <a href="{{ route('employee.projects.index') }}" wire:navigate
+                    <a href="{{ route('employee.projects.index') }}"
                         class="rounded-xl border border-slate-200 px-4 py-2.5 text-center text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
                         Hapus pencarian
                     </a>
@@ -94,7 +94,7 @@
                         @endif
                     </div>
 
-                    <a href="{{ route('employee.projects.show', $project) }}" wire:navigate
+                    <a href="{{ route('employee.projects.show', $project) }}"
                         class="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
                         Lihat proyek dan tugas
                         <span aria-hidden="true">→</span>

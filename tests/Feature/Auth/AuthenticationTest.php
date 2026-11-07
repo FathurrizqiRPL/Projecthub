@@ -1,72 +1,85 @@
 <?php
 
 use App\Models\User;
-use Livewire\Volt\Volt;
 
 test('login screen can be rendered', function () {
-    $response = $this->get('/login');
-
-    $response
+    $this->get('/login')
         ->assertOk()
-        ->assertSeeVolt('pages.auth.login');
+        ->assertViewIs('auth.login')
+        ->assertSee('Masuk ke ProjectHub')
+        ->assertSee('name="username"', false);
 });
 
 test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['must_change_password' => false]);
 
-    $component = Volt::test('pages.auth.login')
-        ->set('form.email', $user->email)
-        ->set('form.password', 'password');
-
-    $component->call('login');
-
-    $component
-        ->assertHasNoErrors()
+    $this->post('/login', [
+        'username' => $user->username,
+        'password' => 'password',
+        'remember' => '1',
+    ])
         ->assertRedirect(route('dashboard', absolute: false));
 
-    $this->assertAuthenticated();
+    $this->assertAuthenticatedAs($user);
 });
 
-test('users can not authenticate with invalid password', function () {
+test('users cannot authenticate with an invalid password', function () {
     $user = User::factory()->create();
 
-    $component = Volt::test('pages.auth.login')
-        ->set('form.email', $user->email)
-        ->set('form.password', 'wrong-password');
-
-    $component->call('login');
-
-    $component
-        ->assertHasErrors()
-        ->assertNoRedirect();
+    $this->from('/login')->post('/login', [
+        'username' => $user->username,
+        'password' => 'wrong-password',
+    ])
+        ->assertRedirect('/login')
+        ->assertSessionHasErrors('username');
 
     $this->assertGuest();
 });
 
-test('navigation menu can be rendered', function () {
-    $user = User::factory()->create();
+test('inactive users cannot authenticate', function () {
+    $user = User::factory()->create(['status' => 'inactive']);
 
-    $this->actingAs($user);
+    $this->from('/login')->post('/login', [
+        'username' => $user->username,
+        'password' => 'password',
+    ])
+        ->assertRedirect('/login')
+        ->assertSessionHasErrors('username');
 
-    $response = $this->get('/dashboard');
-
-    $response
-        ->assertOk()
-        ->assertSeeVolt('layout.navigation');
+    $this->assertGuest();
 });
 
-test('users can logout', function () {
+test('users with a temporary password can change it before continuing', function () {
+    $user = User::factory()->create(['must_change_password' => true]);
+
+    $this->actingAs($user)
+        ->get('/change-password')
+        ->assertOk()
+        ->assertViewIs('auth.change-password');
+
+    $this->put('/change-password', [
+        'password' => 'new-password',
+        'password_confirmation' => 'new-password',
+    ])
+        ->assertRedirect(route('dashboard'));
+
+    expect($user->fresh()->must_change_password)->toBeFalse();
+});
+
+test('navigation menu can be rendered with regular browser navigation', function () {
+    $user = User::factory()->create(['must_change_password' => false]);
+
+    $this->actingAs($user)->get('/profile')
+        ->assertOk()
+        ->assertSee('Keluar');
+});
+
+test('users can log out', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    $component = Volt::test('layout.navigation');
-
-    $component->call('logout');
-
-    $component
-        ->assertHasNoErrors()
-        ->assertRedirect('/');
+    $this->actingAs($user)
+        ->post('/logout')
+        ->assertRedirect(route('login'));
 
     $this->assertGuest();
 });

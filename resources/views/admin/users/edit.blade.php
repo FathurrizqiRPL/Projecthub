@@ -6,7 +6,7 @@
 @section('content')
 <div class="mx-auto max-w-4xl">
     <div class="mb-6">
-        <a href="{{ route('admin.users.show', $user) }}" wire:navigate class="text-sm font-medium text-slate-500 transition hover:text-red-600">
+        <a href="{{ route('admin.users.show', $user) }}" class="text-sm font-medium text-slate-500 transition hover:text-red-600">
             ← Kembali ke Detail Pengguna
         </a>
     </div>
@@ -86,7 +86,7 @@
             </div>
 
             <div class="flex justify-end gap-3 border-t border-slate-200 pt-6">
-                <a href="{{ route('admin.users.show', $user) }}" wire:navigate class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                <a href="{{ route('admin.users.show', $user) }}" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
                     Batal
                 </a>
 

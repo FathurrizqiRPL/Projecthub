@@ -4,38 +4,35 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Volt\Volt;
 
 test('password can be updated', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['must_change_password' => false]);
 
-    $this->actingAs($user);
+    $this->actingAs($user)
+        ->from('/profile')
+        ->put('/profile/password', [
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertRedirect('/profile')
+        ->assertSessionHas('status', 'password-updated');
 
-    $component = Volt::test('profile.update-password-form')
-        ->set('current_password', 'password')
-        ->set('password', 'new-password')
-        ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
-
-    $component
-        ->assertHasNoErrors()
-        ->assertNoRedirect();
-
-    $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
+    expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
 });
 
 test('correct password must be provided to update password', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['must_change_password' => false]);
 
-    $this->actingAs($user);
+    $this->actingAs($user)
+        ->from('/profile')
+        ->put('/profile/password', [
+            'current_password' => 'wrong-password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertRedirect('/profile')
+        ->assertSessionHasErrors('current_password');
 
-    $component = Volt::test('profile.update-password-form')
-        ->set('current_password', 'wrong-password')
-        ->set('password', 'new-password')
-        ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
-
-    $component
-        ->assertHasErrors(['current_password'])
-        ->assertNoRedirect();
+    expect(Hash::check('password', $user->refresh()->password))->toBeTrue();
 });

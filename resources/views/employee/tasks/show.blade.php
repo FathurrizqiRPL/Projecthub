@@ -34,7 +34,6 @@
     @endif
 
     <a href="{{ route('employee.projects.show', ['project' => $task->project, 'stage' => $task->project_stage_id]) }}"
-        wire:navigate
         class="inline-flex items-center gap-2 text-sm font-semibold transition text-slate-500 hover:text-red-600">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>

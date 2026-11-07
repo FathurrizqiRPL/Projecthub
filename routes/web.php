@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\PMController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -342,12 +343,20 @@ Route::middleware([
  Profile
 */
 
-Route::view('profile', 'profile')
-    ->middleware([
-        'auth',
-        'password.changed',
-    ])
-    ->name('profile');
+Route::middleware([
+    'auth',
+    'password.changed',
+])
+    ->group(function (): void {
+        Route::get('profile', [ProfileController::class, 'edit'])
+            ->name('profile');
+        Route::patch('profile', [ProfileController::class, 'update'])
+            ->name('profile.update');
+        Route::put('profile/password', [ProfileController::class, 'updatePassword'])
+            ->name('profile.password.update');
+        Route::delete('profile', [ProfileController::class, 'destroy'])
+            ->name('profile.destroy');
+    });
 
 /*
  Authentication Routes

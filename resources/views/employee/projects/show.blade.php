@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <a href="{{ route('employee.projects.index') }}" wire:navigate
+    <a href="{{ route('employee.projects.index') }}"
         class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-red-600">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
@@ -45,7 +45,6 @@
                         @endphp
 
                         <a href="{{ route('employee.projects.show', ['project' => $project, 'stage' => $projectStage->id]) }}"
-                            wire:navigate
                             @class([
                                 'inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition',
                                 'border-red-600 bg-red-600 text-white' => $isSelected,
@@ -187,7 +186,7 @@
                                     @endif
                                 </div>
 
-                                <a href="{{ route('employee.tasks.show', $task) }}" wire:navigate
+                                <a href="{{ route('employee.tasks.show', $task) }}"
                                     class="mt-4 inline-flex rounded-lg px-3 py-2 text-xs font-semibold transition {{ $group['assigned'] ? 'bg-slate-900 text-white hover:bg-slate-800' : 'border border-slate-200 text-slate-700 hover:bg-slate-50' }}">
                                     {{ $group['assigned'] ? 'Buka tugas' : 'Lihat detail saja' }}
                                 </a>

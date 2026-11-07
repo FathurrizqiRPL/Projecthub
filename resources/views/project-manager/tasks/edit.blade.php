@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <a href="{{ route('project-manager.projects.tasks.show', [$project, $task]) }}" wire:navigate
+    <a href="{{ route('project-manager.projects.tasks.show', [$project, $task]) }}"
         class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-red-600">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
@@ -106,7 +106,7 @@
             </div>
 
             <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
-                <a href="{{ route('project-manager.projects.tasks.show', [$project, $task]) }}" wire:navigate
+                <a href="{{ route('project-manager.projects.tasks.show', [$project, $task]) }}"
                     class="rounded-xl border border-slate-200 px-5 py-2.5 text-center text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
                     Batal
                 </a>

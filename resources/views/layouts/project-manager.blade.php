@@ -32,7 +32,6 @@
         'resources/js/app.js'
     ])
 
-    @livewireStyles
 </head>
 
 <body class="font-sans antialiased text-slate-800">
@@ -51,7 +50,6 @@
 
                 <a
                     href="{{ route('project-manager.dashboard') }}"
-                    wire:navigate
                     class="flex items-center gap-3"
                 >
                     <x-application-logo class="h-10 w-10" />
@@ -76,7 +74,6 @@
                 {{-- Dasbor --}}
                 <a
                     href="{{ route('project-manager.dashboard') }}"
-                    wire:navigate
                     class="flex items-center gap-3 rounded-xl
                            px-4 py-3 text-sm transition
                         {{ request()->routeIs('project-manager.dashboard')
@@ -105,7 +102,6 @@
                 {{-- Proyek --}}
                 <a
                     href="{{ route('project-manager.projects.index') }}"
-                    wire:navigate
                     class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
                         {{ request()->routeIs('project-manager.projects.*')
                             ? 'bg-red-50 font-semibold text-red-600'
@@ -132,7 +128,6 @@
 
                 <a
                     href="{{ route('project-manager.tasks.index') }}"
-                    wire:navigate
                     class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
                         {{ request()->routeIs('project-manager.tasks.*')
                             ? 'bg-red-50 font-semibold text-red-600'
@@ -189,7 +184,6 @@
 
                 <a
                     href="{{ route('profile') }}"
-                    wire:navigate
                     class="mb-1 block rounded-lg px-3 py-2
                            text-sm text-slate-600 transition
                            hover:bg-slate-100"
@@ -268,6 +262,5 @@
 
     </div>
 
-    @livewireScripts
 </body>
 </html>

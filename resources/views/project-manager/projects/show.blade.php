@@ -7,7 +7,7 @@
 <div class="space-y-6">
 
     {{-- Kembali --}}
-    <a href="{{ route('project-manager.projects.index') }}" wire:navigate
+    <a href="{{ route('project-manager.projects.index') }}"
         class="inline-flex items-center gap-2 text-sm font-semibold transition text-slate-500 hover:text-red-600">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
@@ -58,12 +58,12 @@
             </div>
 
             <div class="flex flex-wrap gap-2 shrink-0">
-                <a href="{{ route('project-manager.projects.tasks.index', $project) }}" wire:navigate
+                <a href="{{ route('project-manager.projects.tasks.index', $project) }}"
                     class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">
                     Lihat tugas
                 </a>
 
-                <a href="{{ route('project-manager.projects.edit', $project) }}" wire:navigate
+                <a href="{{ route('project-manager.projects.edit', $project) }}"
                     class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
                     Edit Proyek
                 </a>
@@ -156,7 +156,7 @@
                 </div>
 
                 @if (!in_array($project->status, ['completed', 'cancelled']))
-                    <a href="{{ route('project-manager.projects.members.edit', $project) }}" wire:navigate
+                    <a href="{{ route('project-manager.projects.members.edit', $project) }}"
                         class="px-3 py-2 text-xs font-semibold transition border rounded-lg shrink-0 border-slate-200 text-slate-600 hover:bg-slate-50">
                         Kelola anggota
                     </a>
@@ -213,7 +213,7 @@
                 </div>
 
                 @if ($project->status !== 'completed')
-                    <a href="{{ route('project-manager.projects.workflow.edit', $project) }}" wire:navigate
+                    <a href="{{ route('project-manager.projects.workflow.edit', $project) }}"
                         class="px-3 py-2 text-xs font-semibold transition border rounded-lg shrink-0 border-slate-200 text-slate-600 hover:bg-slate-50">
                         Atur Alur Kerja
                     </a>

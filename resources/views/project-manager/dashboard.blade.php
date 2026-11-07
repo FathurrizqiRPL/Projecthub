@@ -179,7 +179,6 @@
                 @if ($recentProjects->isNotEmpty())
                     <a
                         href="{{ route('project-manager.projects.index') }}"
-                        wire:navigate
                         class="text-xs font-semibold text-red-600
                                transition hover:text-red-700"
                     >
@@ -240,7 +239,6 @@
                                 'project-manager.projects.show',
                                 $project
                             ) }}"
-                            wire:navigate
                             class="flex items-center justify-between gap-4
                                    rounded-xl border border-slate-100
                                    bg-slate-50 p-4 transition
@@ -338,7 +336,6 @@
 
                 <a
                     href="{{ route('project-manager.projects.create') }}"
-                    wire:navigate
                     class="flex w-full items-center justify-center
                            rounded-xl bg-red-600 px-4 py-2.5
                            text-sm font-semibold text-white
@@ -349,7 +346,6 @@
 
                 <a
                     href="{{ route('project-manager.projects.index') }}"
-                    wire:navigate
                     class="flex w-full items-center justify-center
                            rounded-xl border border-slate-200
                            px-4 py-2.5 text-sm font-semibold

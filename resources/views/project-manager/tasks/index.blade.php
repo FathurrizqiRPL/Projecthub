@@ -6,7 +6,7 @@
 @section('content')
 <div class="space-y-6">
     <div class="flex items-center justify-between gap-4">
-        <a href="{{ route('project-manager.projects.show', $project) }}" wire:navigate
+        <a href="{{ route('project-manager.projects.show', $project) }}"
             class="inline-flex items-center gap-2 text-sm font-semibold transition text-slate-500 hover:text-red-600">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
@@ -15,13 +15,13 @@
         </a>
 
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('project-manager.tasks.index', ['filter' => 'review']) }}" wire:navigate
+            <a href="{{ route('project-manager.tasks.index', ['filter' => 'review']) }}"
                 class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
                 Tugas Perlu review
             </a>
 
             @if (!in_array($project->status, ['completed', 'cancelled']))
-                <a href="{{ route('project-manager.projects.tasks.create', ['project' => $project, 'stage' => $stage?->id]) }}" wire:navigate
+                <a href="{{ route('project-manager.projects.tasks.create', ['project' => $project, 'stage' => $stage?->id]) }}"
                     class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">
                     + Buat Tugas
                 </a>
@@ -51,7 +51,6 @@
                     @endphp
 
                     <a href="{{ route('project-manager.projects.tasks.index', ['project' => $project, 'stage' => $projectStage->id]) }}"
-                        wire:navigate
                         @class([
                             'inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition',
                             'border-red-600 bg-red-600 text-white' => $isSelected,
@@ -233,7 +232,7 @@
                         </div>
 
                         <div class="flex flex-wrap gap-2 shrink-0">
-                            <a href="{{ route('project-manager.projects.tasks.show', [$project, $task]) }}" wire:navigate
+                            <a href="{{ route('project-manager.projects.tasks.show', [$project, $task]) }}"
                                 class="rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-slate-800">
                                 Detail tugas
                             </a>

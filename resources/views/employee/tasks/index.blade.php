@@ -43,7 +43,7 @@
                     $actionTask = $quickActionTasks[$action['key']];
                 @endphp
                 @if ($actionTask)
-                    <a href="{{ route('employee.tasks.show', $actionTask) }}" wire:navigate class="flex items-center justify-between gap-4 rounded-xl px-4 py-3 text-sm font-semibold transition {{ $action['style'] }}">
+                    <a href="{{ route('employee.tasks.show', $actionTask) }}" class="flex items-center justify-between gap-4 rounded-xl px-4 py-3 text-sm font-semibold transition {{ $action['style'] }}">
                         <span class="min-w-0">
                             <span class="block">{{ $action['title'] }}</span>
                             <span class="mt-1 block truncate text-xs {{ $action['key'] === 'pending' ? 'text-red-100' : 'text-slate-500' }}">{{ $actionTask->title }} · {{ $actionTask->project?->name }}</span>
@@ -97,7 +97,6 @@
 
                         <a
                             href="{{ route('employee.tasks.show', $newTask) }}"
-                            wire:navigate
                             class="shrink-0 rounded-xl bg-red-600 px-4 py-2.5 text-center text-xs font-semibold text-white transition hover:bg-red-700"
                         >
                             Lihat tugas
@@ -238,7 +237,6 @@
                         </div>
 
                         <a href="{{ route('employee.tasks.show', $task) }}"
-                            wire:navigate
                             class="shrink-0 rounded-xl bg-slate-900 px-4 py-2.5 text-center text-xs font-semibold text-white transition hover:bg-slate-800">
                             Detail tugas
                         </a>

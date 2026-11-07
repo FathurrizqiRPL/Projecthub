@@ -31,7 +31,6 @@
         'resources/js/app.js'
     ])
 
-    @livewireStyles
 </head>
 
 <body class="font-sans antialiased text-slate-800">
@@ -50,7 +49,6 @@
 
                 <a
                     href="{{ route('admin.dashboard') }}"
-                    wire:navigate
                     class="flex items-center gap-3"
                 >
                     <x-application-logo class="w-10 h-10" />
@@ -75,7 +73,6 @@
                 {{-- Dasbor --}}
                 <a
                     href="{{ route('admin.dashboard') }}"
-                    wire:navigate
                     class="flex items-center gap-3 rounded-xl
                            px-4 py-3 text-sm transition
                         {{ request()->routeIs('admin.dashboard')
@@ -103,7 +100,6 @@
 
                 <a
                     href="{{ route('admin.users.index') }}"
-                    wire:navigate
                     class="flex items-center gap-3 rounded-xl
                         px-4 py-3 text-sm transition
                         {{ request()->routeIs('admin.users.*')
@@ -159,7 +155,6 @@
 
                 <a
                     href="{{ route('profile') }}"
-                    wire:navigate
                     class="block px-3 py-2 mb-1 text-sm transition rounded-lg text-slate-600 hover:bg-slate-100"
                 >
                     Profil
@@ -233,6 +228,5 @@
     </div>
 
 
-    @livewireScripts
 </body>
 </html>

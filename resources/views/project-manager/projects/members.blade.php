@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto space-y-6">
-    <a href="{{ route('project-manager.projects.show', $project) }}" wire:navigate class="inline-flex items-center gap-2 text-sm font-semibold transition text-slate-500 hover:text-red-600">
+    <a href="{{ route('project-manager.projects.show', $project) }}" class="inline-flex items-center gap-2 text-sm font-semibold transition text-slate-500 hover:text-red-600">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
         </svg>
@@ -75,7 +75,7 @@
             @enderror
 
             <div class="flex justify-end gap-3 pt-6 mt-8 border-t border-slate-100">
-                <a href="{{ route('project-manager.projects.show', $project) }}" wire:navigate class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                <a href="{{ route('project-manager.projects.show', $project) }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
                     Batal
                 </a>
 
